@@ -15,11 +15,17 @@ from aioia_core.auth import UserRole, UserRoleProvider
 from aioia_core.errors import ErrorResponse, error_codes
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
-CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel, contravariant=True)
-UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel, contravariant=True)
+CreateSchemaType_contra = TypeVar(
+    "CreateSchemaType_contra", bound=BaseModel, contravariant=True
+)
+UpdateSchemaType_contra = TypeVar(
+    "UpdateSchemaType_contra", bound=BaseModel, contravariant=True
+)
 
 
-class CrudManagerProtocol(Protocol[ModelType, CreateSchemaType, UpdateSchemaType]):
+class CrudManagerProtocol(
+    Protocol[ModelType, CreateSchemaType_contra, UpdateSchemaType_contra]
+):
     """Protocol for CRUD manager operations."""
 
     def get_by_id(self, item_id: str) -> ModelType | None: ...
@@ -30,8 +36,10 @@ class CrudManagerProtocol(Protocol[ModelType, CreateSchemaType, UpdateSchemaType
         sort: list | None = None,
         filters: list | None = None,
     ) -> tuple[list[ModelType], int]: ...
-    def create(self, schema: CreateSchemaType) -> ModelType: ...
-    def update(self, item_id: str, schema: UpdateSchemaType) -> ModelType | None: ...
+    def create(self, schema: CreateSchemaType_contra) -> ModelType: ...
+    def update(
+        self, item_id: str, schema: UpdateSchemaType_contra
+    ) -> ModelType | None: ...
     def delete(self, item_id: str) -> bool: ...
 
 
