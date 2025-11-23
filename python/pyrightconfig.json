@@ -4,6 +4,5 @@
     "venv",
     "**/flycheck_*.py",
     "alembic"
-  ],
-  "reportInvalidTypeVarUse": "none"
+  ]
 }
