@@ -28,11 +28,7 @@ class UserRoleProvider(Protocol):
         Args:
             user_id: User identifier
             db: Database session
-
-        Returns:
-            UserRole if user exists, None otherwise
         """
-        ...
 
     def get_user_context(self, user_id: str, db: Session) -> dict | None:
         """
@@ -41,9 +37,4 @@ class UserRoleProvider(Protocol):
         Args:
             user_id: User identifier
             db: Database session
-
-        Returns:
-            Dictionary with user info (id, username, email, etc.)
-            None if user not found
         """
-        ...
