@@ -91,8 +91,8 @@ class BaseCrudRouter(
     def __init__(
         self,
         model_class: type[ModelType],
-        create_schema: type[CreateSchemaType],
-        update_schema: type[UpdateSchemaType],
+        create_schema: type[CreateSchemaType_contra],
+        update_schema: type[UpdateSchemaType_contra],
         db_session_factory: sessionmaker,
         manager_factory,
         role_provider: UserRoleProvider | None,
