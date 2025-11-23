@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
-import type { BaseApiService } from "@/services/api/BaseApiService";
+import type { BaseApiService } from "../client/BaseApiService";
 import type {
   BaseRecord,
   GetListParams,
@@ -16,7 +16,7 @@ import type {
   CreateResponse,
   UpdateResponse,
   DeleteOneResponse,
-} from "@/types/repository";
+} from "./types";
 
 export abstract class BaseCrudRepository<
   TData extends BaseRecord = BaseRecord,
