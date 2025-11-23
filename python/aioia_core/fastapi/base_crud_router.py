@@ -15,8 +15,8 @@ from aioia_core.auth import UserRole, UserRoleProvider
 from aioia_core.errors import ErrorResponse, error_codes
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
-CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
-UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel, contravariant=True)
+UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel, contravariant=True)
 
 
 class CrudManagerProtocol(Protocol[ModelType, CreateSchemaType, UpdateSchemaType]):
