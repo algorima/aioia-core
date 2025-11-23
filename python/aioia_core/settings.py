@@ -3,6 +3,20 @@
 from pydantic_settings import BaseSettings
 
 
+class DatabaseSettings(BaseSettings):
+    """
+    Database connection settings.
+
+    Environment variables:
+        DATABASE_URL: PostgreSQL database URL
+    """
+
+    url: str
+
+    class Config:
+        env_prefix = "DATABASE_"
+
+
 class OpenAIAPISettings(BaseSettings):
     """
     OpenAI API authentication settings.

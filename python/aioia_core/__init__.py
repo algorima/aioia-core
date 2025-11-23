@@ -19,7 +19,7 @@ from aioia_core.errors import (
     extract_error_code_from_exception,
     get_error_detail_from_exception,
 )
-from aioia_core.settings import JWTSettings, OpenAIAPISettings
+from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
 
 __all__ = [
     # Database
@@ -35,6 +35,7 @@ __all__ = [
     "extract_error_code_from_exception",
     "get_error_detail_from_exception",
     # Settings
+    "DatabaseSettings",
     "OpenAIAPISettings",
     "JWTSettings",
 ]
