@@ -2,12 +2,17 @@
  * AIoIA Core - TypeScript/JavaScript infrastructure
  *
  * Core infrastructure for AIoIA projects
+ *
+ * Current: Barrel export pattern (Git dependency standard)
+ * Future: Consider migrating to private npm registry with subpath exports
+ *         - Build output (dist/) with .d.ts files
+ *         - Subpath exports: "@aioia/core/client", "@aioia/core/repositories"
+ *         - Better tree-shaking and explicit module boundaries
  */
 
-/**
- * AIoIA Core infrastructure package.
- *
- * Use full path imports for clarity:
- *   import { BaseApiService } from "@aioia/core/client/BaseApiService"
- *   import { BaseCrudRepository } from "@aioia/core/repositories/BaseCrudRepository"
- */
+// API Client
+export { BaseApiService } from "./client/BaseApiService";
+
+// Repository Pattern
+export { BaseCrudRepository } from "./repositories/BaseCrudRepository";
+export type * from "./repositories/types";
