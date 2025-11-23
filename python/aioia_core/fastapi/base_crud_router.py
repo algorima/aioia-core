@@ -24,23 +24,32 @@ UpdateSchemaType_contra = TypeVar(
 
 
 class CrudManagerProtocol(
-    Protocol[ModelType, CreateSchemaType_contra, UpdateSchemaType_contra]
+    Protocol, Generic[ModelType, CreateSchemaType_contra, UpdateSchemaType_contra]
 ):
     """Protocol for CRUD manager operations."""
 
-    def get_by_id(self, item_id: str) -> ModelType | None: ...
+    def get_by_id(self, item_id: str) -> ModelType | None:
+        """Get item by ID."""
+
     def get_all(
         self,
         current: int = 1,
         page_size: int = 10,
         sort: list | None = None,
         filters: list | None = None,
-    ) -> tuple[list[ModelType], int]: ...
-    def create(self, schema: CreateSchemaType_contra) -> ModelType: ...
+    ) -> tuple[list[ModelType], int]:
+        """Get all items with pagination."""
+
+    def create(self, schema: CreateSchemaType_contra) -> ModelType:
+        """Create new item."""
+
     def update(
         self, item_id: str, schema: UpdateSchemaType_contra
-    ) -> ModelType | None: ...
-    def delete(self, item_id: str) -> bool: ...
+    ) -> ModelType | None:
+        """Update existing item."""
+
+    def delete(self, item_id: str) -> bool:
+        """Delete item."""
 
 
 ManagerType = TypeVar("ManagerType", bound=CrudManagerProtocol)
@@ -69,7 +78,7 @@ class DeleteResponse(BaseModel):
 
 
 class BaseCrudRouter(
-    Generic[ModelType, CreateSchemaType, UpdateSchemaType, ManagerType]
+    Generic[ModelType, CreateSchemaType_contra, UpdateSchemaType_contra, ManagerType]
 ):
     # pylint: disable=too-many-instance-attributes
     """
