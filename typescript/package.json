@@ -4,10 +4,7 @@
   "description": "Core infrastructure for AIoIA projects (TypeScript)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "typescript"],
-  "exports": {
-    "./*": "./*"
-  },
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
