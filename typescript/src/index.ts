@@ -4,9 +4,10 @@
  * Core infrastructure for AIoIA projects
  */
 
-// API Client
-export { BaseApiService } from "./client/BaseApiService";
-
-// Repository Pattern
-export { BaseCrudRepository } from "./repositories/BaseCrudRepository";
-export type * from "./repositories/types";
+/**
+ * AIoIA Core infrastructure package.
+ *
+ * Use full path imports for clarity:
+ *   import { BaseApiService } from "@aioia/core/client/BaseApiService"
+ *   import { BaseCrudRepository } from "@aioia/core/repositories/BaseCrudRepository"
+ */
