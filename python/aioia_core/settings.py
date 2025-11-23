@@ -49,7 +49,7 @@ class OpenAIAPISettings(BaseSettings):
 
     INI_SECTION: ClassVar[str] = "openai"
 
-    api_key: str
+    api_key: str | None = None
     organization: str | None = None
 
     class Config:
@@ -66,7 +66,7 @@ class JWTSettings(BaseSettings):
 
     INI_SECTION: ClassVar[str] = "jwt"
 
-    secret_key: str
+    secret_key: str | None = None
 
     class Config:
         env_prefix = "JWT_"
