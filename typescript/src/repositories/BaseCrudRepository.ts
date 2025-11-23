@@ -21,7 +21,7 @@ import type {
 export abstract class BaseCrudRepository<
   TData extends BaseRecord = BaseRecord,
 > {
-  protected abstract resource: string;
+  abstract readonly resource: string;
   protected apiService: BaseApiService;
 
   /**
