@@ -4,7 +4,9 @@
   "description": "Core infrastructure for AIoIA projects (TypeScript)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -13,7 +15,12 @@
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix"
   },
-  "keywords": ["aioia", "infrastructure", "repository", "api-client"],
+  "keywords": [
+    "aioia",
+    "infrastructure",
+    "repository",
+    "api-client"
+  ],
   "author": "AIoIA, Inc.",
   "license": "Apache-2.0",
   "repository": {
@@ -22,14 +29,15 @@
     "directory": "typescript"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
     "next": "^13.0.0 || ^14.0.0",
+    "react": "^18.0.0",
     "zod": "^3.23.0"
   },
   "dependencies": {
     "@sentry/nextjs": "^7.0.0"
   },
   "devDependencies": {
+    "@types/node": "^24.10.1",
     "@types/react": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",

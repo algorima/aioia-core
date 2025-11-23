@@ -11,8 +11,8 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, sessionmaker
 
-from aioia_core.errors import ErrorResponse, error_codes
 from aioia_core.auth import UserRole, UserRoleProvider
+from aioia_core.errors import ErrorResponse, error_codes
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -125,8 +125,9 @@ class BaseCrudRouter(
                 db.close()
 
         def get_user_id_from_token(
-            credentials: HTTPAuthorizationCredentials
-            | None = Depends(optional_security),
+            credentials: HTTPAuthorizationCredentials | None = Depends(
+                optional_security
+            ),
         ) -> str | None:
             """
             Decodes JWT and returns user_id.
@@ -256,15 +257,13 @@ class BaseCrudRouter(
         async def list_items(
             current: int = Query(1, ge=1, description="Current page number"),
             page_size: int = Query(10, ge=1, le=100, description="Items per page"),
-            sort_param: str
-            | None = Query(
+            sort_param: str | None = Query(
                 None,
                 alias="sort",
                 description='Sorting criteria in JSON format. Array of [field, order] pairs. Example: [["createdAt","desc"], ["name","asc"]]',
                 example='[["createdAt","desc"]]',
             ),
-            filters_param: str
-            | None = Query(
+            filters_param: str | None = Query(
                 None,
                 alias="filters",
                 description="Filter conditions (JSON format)",

@@ -6,11 +6,11 @@ Provides SQLAlchemy base models and generic CRUD manager pattern.
 
 from __future__ import annotations
 
-import uuid
 from abc import ABC
 from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Any, Generic, TypeVar
+from uuid import uuid4
 
 from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy import DateTime, MetaData, String, and_, desc, or_
@@ -44,7 +44,7 @@ class BaseModel(Base):
     __abstract__ = True
 
     id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
+        String, primary_key=True, default=lambda: str(uuid4())
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, nullable=False
