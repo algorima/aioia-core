@@ -1,0 +1,25 @@
+{
+  "name": "@aioia/core",
+  "version": "0.1.0",
+  "description": "Core infrastructure for AIoIA projects (TypeScript)",
+  "main": "typescript/src/index.ts",
+  "types": "typescript/src/index.ts",
+  "files": [
+    "typescript/src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/algorima/aioia-core.git"
+  },
+  "keywords": [
+    "aioia",
+    "infrastructure",
+    "api-client",
+    "repository-pattern"
+  ],
+  "author": "AIoIA, Inc. <devops@aioia.ai>",
+  "license": "Apache-2.0",
+  "peerDependencies": {
+    "zod": "^3.0.0"
+  }
+}
