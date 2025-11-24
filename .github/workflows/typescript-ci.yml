@@ -2,7 +2,8 @@ name: TypeScript CI
 
 on:
   push:
-    branches: [main, feat/*]
+    branches:
+      - main
   pull_request:
     paths:
       - "typescript/**"
