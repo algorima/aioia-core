@@ -1,6 +1,6 @@
-# Contributing to AIoIA Core
+# AIoIA Core 기여 가이드
 
-## Development Setup
+## 개발 환경 설정
 
 ### Python
 
@@ -21,20 +21,20 @@ npm test
 npm run type-check
 ```
 
-## Code Standards
+## 코딩 표준
 
-- **Python**: Follow PEP 8, use type hints
-- **TypeScript**: Strict mode, explicit types
-- **Testing**: Write tests for new features
-- **Documentation**: Update docstrings and README
+- **Python**: PEP 8 준수, 타입 힌트 사용
+- **TypeScript**: Strict 모드, 명시적 타입
+- **테스트**: 새 기능에 테스트 작성
+- **문서화**: Docstring과 README 업데이트
 
-## Pull Requests
+## Pull Request
 
-1. Create feature branch from `main`
-2. Write tests
-3. Ensure all checks pass
-4. Submit PR with clear description
+1. `main`에서 feature 브랜치 생성
+2. 테스트 작성
+3. 모든 검사 통과 확인
+4. 명확한 설명과 함께 PR 제출
 
-## License
+## 라이선스
 
-Apache 2.0 - See LICENSE file
+Apache 2.0 - LICENSE 파일 참고
