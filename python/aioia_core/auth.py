@@ -21,7 +21,9 @@ class UserRoleProvider(Protocol):
     with BaseCrudRouter's authentication/authorization.
     """
 
-    def get_user_role(self, user_id: str, db: Session) -> UserRole | None:
+    def get_user_role(  # pylint: disable=unnecessary-ellipsis
+        self, user_id: str, db: Session
+    ) -> UserRole | None:
         """
         Get user's role by ID.
 
@@ -29,8 +31,11 @@ class UserRoleProvider(Protocol):
             user_id: User identifier
             db: Database session
         """
+        ...
 
-    def get_user_context(self, user_id: str, db: Session) -> dict | None:
+    def get_user_context(  # pylint: disable=unnecessary-ellipsis
+        self, user_id: str, db: Session
+    ) -> dict | None:
         """
         Get user context for monitoring/observability tools.
 
@@ -38,3 +43,4 @@ class UserRoleProvider(Protocol):
             user_id: User identifier
             db: Database session
         """
+        ...

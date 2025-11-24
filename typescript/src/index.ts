@@ -11,7 +11,12 @@
  */
 
 // API Client
-export { BaseApiService } from "./client/BaseApiService";
+export {
+  BaseApiService,
+  ERROR_CODES,
+  QuotaExceededError,
+} from "./client/BaseApiService";
+export type { ApiErrorData } from "./client/BaseApiService";
 
 // Repository Pattern
 export { BaseCrudRepository } from "./repositories/BaseCrudRepository";

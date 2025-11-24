@@ -1,7 +1,7 @@
 import json
 from collections.abc import Callable, Sequence
 from datetime import datetime, timezone
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Any, Generic, TypeVar
 
 import sentry_sdk
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
@@ -12,47 +12,16 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session, sessionmaker
 
 from aioia_core.auth import UserRole, UserRoleProvider
-from aioia_core.errors import ErrorResponse, error_codes
-
-ModelType = TypeVar("ModelType", bound=BaseModel)
-CreateSchemaType_contra = TypeVar(
-    "CreateSchemaType_contra", bound=BaseModel, contravariant=True
+from aioia_core.errors import (
+    FORBIDDEN,
+    INVALID_QUERY_PARAMS,
+    INVALID_TOKEN,
+    RESOURCE_CREATION_FAILED,
+    RESOURCE_NOT_FOUND,
+    RESOURCE_UPDATE_FAILED,
+    ErrorResponse,
 )
-UpdateSchemaType_contra = TypeVar(
-    "UpdateSchemaType_contra", bound=BaseModel, contravariant=True
-)
-
-
-class CrudManagerProtocol(
-    Protocol, Generic[ModelType, CreateSchemaType_contra, UpdateSchemaType_contra]
-):
-    """Protocol for CRUD manager operations."""
-
-    def get_by_id(self, item_id: str) -> ModelType | None:
-        """Get item by ID."""
-
-    def get_all(
-        self,
-        current: int = 1,
-        page_size: int = 10,
-        sort: list | None = None,
-        filters: list | None = None,
-    ) -> tuple[list[ModelType], int]:
-        """Get all items with pagination."""
-
-    def create(self, schema: CreateSchemaType_contra) -> ModelType:
-        """Create new item."""
-
-    def update(
-        self, item_id: str, schema: UpdateSchemaType_contra
-    ) -> ModelType | None:
-        """Update existing item."""
-
-    def delete(self, item_id: str) -> bool:
-        """Delete item."""
-
-
-ManagerType = TypeVar("ManagerType", bound=CrudManagerProtocol)
+from aioia_core.protocols import ManagerType, ModelType
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -77,8 +46,31 @@ class DeleteResponse(BaseModel):
     data: dict[str, Any]
 
 
+# TypeVar design decision: No contravariance for concrete router implementation
+#
+# Contravariance is required for Protocol definitions (interfaces) to enable
+# correct subtype relationships in Protocol parameters. However, concrete generic
+# classes like BaseCrudRouter do NOT need contravariance because:
+#
+# 1. YAGNI (You Aren't Gonna Need It): Contravariance adds complexity without
+#    providing value for concrete implementations. The router binds to specific
+#    types at instantiation.
+#
+# 2. Simplicity: Invariant TypeVars are easier to understand and reason about.
+#    Type checker errors are clearer when variance doesn't come into play.
+#
+# 3. Occam's Razor: The simplest solution that works is preferable. Original
+#    implementation worked fine without contravariance.
+#
+# Note: aioia_core/protocols.py DOES use contravariance for Protocol definitions,
+# which is correct per PEP 544. The distinction is: Protocols (interfaces) need
+# contravariance, concrete classes (implementations) don't.
+CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
+UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
+
+
 class BaseCrudRouter(
-    Generic[ModelType, CreateSchemaType_contra, UpdateSchemaType_contra, ManagerType]
+    Generic[ModelType, CreateSchemaType, UpdateSchemaType, ManagerType]
 ):
     # pylint: disable=too-many-instance-attributes
     """
@@ -91,8 +83,8 @@ class BaseCrudRouter(
     def __init__(
         self,
         model_class: type[ModelType],
-        create_schema: type[CreateSchemaType_contra],
-        update_schema: type[UpdateSchemaType_contra],
+        create_schema: type[CreateSchemaType],
+        update_schema: type[UpdateSchemaType],
         db_session_factory: sessionmaker,
         manager_factory,
         role_provider: UserRoleProvider | None,
@@ -142,9 +134,8 @@ class BaseCrudRouter(
                 db.close()
 
         def get_user_id_from_token(
-            credentials: HTTPAuthorizationCredentials | None = Depends(
-                optional_security
-            ),
+            credentials: HTTPAuthorizationCredentials
+            | None = Depends(optional_security),
         ) -> str | None:
             """
             Decodes JWT and returns user_id.
@@ -171,7 +162,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail={
                         "detail": "Invalid authentication credentials",
-                        "code": error_codes.INVALID_TOKEN,
+                        "code": INVALID_TOKEN,
                     },
                     headers={"WWW-Authenticate": "Bearer"},
                 ) from exc
@@ -198,7 +189,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail={
                         "detail": "User associated with token not found",
-                        "code": error_codes.INVALID_TOKEN,
+                        "code": INVALID_TOKEN,
                     },
                     headers={"WWW-Authenticate": "Bearer"},
                 )
@@ -223,7 +214,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail={
                         "detail": "Admin access required",
-                        "code": error_codes.FORBIDDEN,
+                        "code": FORBIDDEN,
                     },
                 )
             # get_current_user_role ensures user_id is str when role is ADMIN
@@ -274,13 +265,15 @@ class BaseCrudRouter(
         async def list_items(
             current: int = Query(1, ge=1, description="Current page number"),
             page_size: int = Query(10, ge=1, le=100, description="Items per page"),
-            sort_param: str | None = Query(
+            sort_param: str
+            | None = Query(
                 None,
                 alias="sort",
                 description='Sorting criteria in JSON format. Array of [field, order] pairs. Example: [["createdAt","desc"], ["name","asc"]]',
                 example='[["createdAt","desc"]]',
             ),
-            filters_param: str | None = Query(
+            filters_param: str
+            | None = Query(
                 None,
                 alias="filters",
                 description="Filter conditions (JSON format)",
@@ -343,7 +336,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail={
                         "detail": f"Failed to create {self.resource_name}",
-                        "code": error_codes.RESOURCE_CREATION_FAILED,
+                        "code": RESOURCE_CREATION_FAILED,
                     },
                 )
             return SingleItemResponseModel(data=created_item)
@@ -411,7 +404,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail={
                         "detail": f"{self.resource_name.title()} not found or update failed: {item_id}",
-                        "code": error_codes.RESOURCE_UPDATE_FAILED,
+                        "code": RESOURCE_UPDATE_FAILED,
                     },
                 )
             return SingleItemResponseModel(data=updated_item)
@@ -442,7 +435,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail={
                         "detail": f"{self.resource_name.title()} not found or already deleted: {item_id}",
-                        "code": error_codes.RESOURCE_NOT_FOUND,
+                        "code": RESOURCE_NOT_FOUND,
                     },
                 )
 
@@ -464,7 +457,7 @@ class BaseCrudRouter(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail={
                     "detail": f"{self.resource_name.title()} not found: {item_id}",
-                    "code": error_codes.RESOURCE_NOT_FOUND,
+                    "code": RESOURCE_NOT_FOUND,
                 },
             )
         return item
@@ -516,7 +509,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "detail": "'sort' parameter must be a valid JSON string",
-                        "code": error_codes.INVALID_QUERY_PARAMS,
+                        "code": INVALID_QUERY_PARAMS,
                     },
                 ) from e
 
@@ -534,7 +527,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "detail": '\'sort\' parameter format must be [["field", "asc|desc"], ...]. Example: [["name", "asc"], ["createdAt", "desc"]]',
-                        "code": error_codes.INVALID_QUERY_PARAMS,
+                        "code": INVALID_QUERY_PARAMS,
                     },
                 )
 
@@ -548,7 +541,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "detail": "'filters' parameter must be a valid JSON string",
-                        "code": error_codes.INVALID_QUERY_PARAMS,
+                        "code": INVALID_QUERY_PARAMS,
                     },
                 ) from e
 
@@ -557,7 +550,7 @@ class BaseCrudRouter(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "detail": "'filters' parameter must be a list of filter objects.",
-                        "code": error_codes.INVALID_QUERY_PARAMS,
+                        "code": INVALID_QUERY_PARAMS,
                     },
                 )
 

@@ -9,7 +9,6 @@ Provides:
 
 __version__ = "0.1.0"
 
-from aioia_core.database import Base, BaseManager, BaseModel
 from aioia_core.errors import (
     INTERNAL_SERVER_ERROR,
     RESOURCE_NOT_FOUND,
@@ -19,6 +18,9 @@ from aioia_core.errors import (
     extract_error_code_from_exception,
     get_error_detail_from_exception,
 )
+from aioia_core.managers import BaseManager
+from aioia_core.models import Base, BaseModel
+from aioia_core.protocols import CrudManagerProtocol, DatabaseManagerProtocol
 from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
 
 __all__ = [
@@ -26,6 +28,8 @@ __all__ = [
     "Base",
     "BaseModel",
     "BaseManager",
+    "CrudManagerProtocol",
+    "DatabaseManagerProtocol",
     # Errors
     "ErrorResponse",
     "UNAUTHORIZED",
