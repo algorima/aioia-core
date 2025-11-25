@@ -7,7 +7,7 @@ from sqlalchemy import DateTime, Integer, String, or_
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 from aioia_core.protocols import DatabaseManagerProtocol
-from aioia_core.factories.base_manager_factory import BaseManagerFactory
+from config.factories.base_manager_factory import BaseManagerFactory
 
 
 class Base(DeclarativeBase):
