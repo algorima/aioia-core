@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from aioia_core.managers import BaseManager
 from aioia_core.models import BaseModel as DBBaseModel
-from tests.unit.test_database_manager import TestDatabaseManager
+from aioia_core.testing.database_manager import TestDatabaseManager
 
 
 # 테스트용 모델 정의
