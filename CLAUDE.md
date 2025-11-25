@@ -34,3 +34,4 @@
 - 최소 변경: 안정성 최우선
 - 하위 호환성: Breaking change 최소화
 - 테스트 필수: 모든 PR에 테스트 포함
+- PR 템플릿: `.github/PULL_REQUEST_TEMPLATE.md` 참고
