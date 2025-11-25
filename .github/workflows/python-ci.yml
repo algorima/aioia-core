@@ -14,14 +14,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Read Python version
         id: python-version
         run: echo "version=$(cat python/.python-version)" >> $GITHUB_OUTPUT
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ steps.python-version.outputs.version }}
 
@@ -41,4 +41,12 @@ jobs:
 
       - name: Test
         run: poetry run make test
+        working-directory: python
+
+      - name: Build
+        run: poetry build
+        working-directory: python
+
+      - name: Publish (dry-run)
+        run: poetry publish --dry-run
         working-directory: python

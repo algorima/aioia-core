@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
@@ -31,4 +31,12 @@ jobs:
 
       - name: Test
         run: npm test
+        working-directory: typescript
+
+      - name: Build
+        run: npm run build
+        working-directory: typescript
+
+      - name: Publish (dry-run)
+        run: npm publish --access public --dry-run
         working-directory: typescript
