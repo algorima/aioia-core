@@ -26,6 +26,12 @@ jobs:
         run: npm run build
         working-directory: typescript
 
+      - name: Publish (dry-run)
+        run: npm publish --access public --dry-run
+        working-directory: typescript
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish
         run: npm publish --access public
         working-directory: typescript
