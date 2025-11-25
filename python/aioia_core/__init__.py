@@ -18,6 +18,7 @@ from aioia_core.errors import (
     extract_error_code_from_exception,
     get_error_detail_from_exception,
 )
+from aioia_core.factories.base_manager_factory import BaseManagerFactory
 from aioia_core.managers import BaseManager
 from aioia_core.models import Base, BaseModel
 from aioia_core.protocols import CrudManagerProtocol, DatabaseManagerProtocol
@@ -28,6 +29,7 @@ __all__ = [
     "Base",
     "BaseModel",
     "BaseManager",
+    "BaseManagerFactory",
     "CrudManagerProtocol",
     "DatabaseManagerProtocol",
     # Errors
