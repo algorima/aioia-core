@@ -11,7 +11,7 @@
     }
   },
   "files": [
-    "typescript"
+    "typescript/dist"
   ],
   "repository": {
     "type": "git",
