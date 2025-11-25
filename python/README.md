@@ -12,27 +12,22 @@ pip install aioia-core
 
 - **Database**: SQLAlchemy Base, BaseModel, BaseManager (CRUD)
 - **Errors**: 표준화된 에러 코드 및 응답
-- **LLM**: OpenAI/Anthropic provider 추상화
+- **Settings**: DatabaseSettings, OpenAIAPISettings, JWTSettings
 - **Testing**: 테스트 인프라 (fixtures, managers)
 
 ## 사용법
 
 ```python
-from aioia_core.database import BaseModel, BaseManager
+from aioia_core import BaseModel, BaseManager
 from aioia_core.errors import ErrorResponse, RESOURCE_NOT_FOUND
-from aioia_core.llm import ModelSettings, OpenAIProvider
 
 # SQLAlchemy 모델
 class MyModel(BaseModel):
     __tablename__ = "my_table"
     name: Mapped[str] = mapped_column(String)
 
-# LLM 사용
-provider = OpenAIProvider()
-model = provider.init_chat_model(
-    ModelSettings(chat_model="gpt-4o", temperature=0.7),
-    api_key="sk-..."
-)
+# Manager 사용
+manager = BaseManager(session, MyModel)
 ```
 
 ## 요구사항
