@@ -7,9 +7,9 @@
 ```bash
 cd python
 poetry install
-poetry run pytest
-poetry run mypy aioia_core
-poetry run pylint aioia_core
+poetry run make test
+poetry run make lint
+poetry run make type-check
 ```
 
 ### TypeScript
