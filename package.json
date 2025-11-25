@@ -2,12 +2,12 @@
   "name": "@aioia/core",
   "version": "0.1.0",
   "description": "Core infrastructure for AIoIA projects (TypeScript)",
-  "main": "./typescript/src/index.ts",
-  "types": "./typescript/src/index.ts",
+  "main": "./typescript/dist/index.js",
+  "types": "./typescript/dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./typescript/src/index.ts",
-      "default": "./typescript/src/index.ts"
+      "types": "./typescript/dist/index.d.ts",
+      "default": "./typescript/dist/index.js"
     }
   },
   "files": [
