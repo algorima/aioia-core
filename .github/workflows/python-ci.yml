@@ -42,3 +42,11 @@ jobs:
       - name: Test
         run: poetry run make test
         working-directory: python
+
+      - name: Build
+        run: poetry build
+        working-directory: python
+
+      - name: Publish (dry-run)
+        run: poetry publish --dry-run
+        working-directory: python
