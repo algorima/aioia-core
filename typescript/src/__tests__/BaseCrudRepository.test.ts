@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 import { BaseCrudRepository } from "../repositories/BaseCrudRepository";
+import type { BaseRecord } from "../repositories/types";
+
 // 1. 테스트용 구체적인 Repository 클래스 정의
 interface TestData extends BaseRecord {
   name: string;
@@ -30,7 +32,7 @@ const mockBuildUrl = jest
 const mockApiService = {
   request: mockRequest,
   buildUrl: mockBuildUrl,
-} as unknown as ApiService;
+} as any;  // Mock
 
 // 3. 테스트 시작
 describe("BaseCrudRepository", () => {
