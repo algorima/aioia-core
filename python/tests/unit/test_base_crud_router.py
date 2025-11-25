@@ -12,8 +12,7 @@ from sqlalchemy.orm import sessionmaker
 from aioia_core.auth import UserRole
 from aioia_core.errors import FORBIDDEN, INVALID_TOKEN
 from aioia_core.fastapi import BaseCrudRouter
-from tests.unit.test_crud_fixtures import (
-    SECRET,
+from aioia_core.testing.crud_fixtures import (
     Base,
     TestCreate,
     TestManager,
@@ -21,6 +20,8 @@ from tests.unit.test_crud_fixtures import (
     TestModel,
     TestUpdate,
 )
+
+SECRET = "test-secret-key"
 
 
 def make_jwt(sub: str = "admin_user"):
