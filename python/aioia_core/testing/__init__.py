@@ -7,8 +7,6 @@ from aioia_core.testing.crud_fixtures import (
     TestManagerFactory,
     TestModel,
     TestUpdate,
-    create_test_manager_factory,
-    setup_test_database,
 )
 from aioia_core.testing.database_manager import TestDatabaseManager
 
@@ -20,6 +18,4 @@ __all__ = [
     "TestUpdate",
     "TestManager",
     "TestManagerFactory",
-    "setup_test_database",
-    "create_test_manager_factory",
 ]
