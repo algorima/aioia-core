@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Core infrastructure for AIoIA projects"
 authors = ["AIoIA, Inc. <devops@aioia.ai>"]
 license = "Apache-2.0"
-readme = "../README.md"
+readme = "README.md"
 keywords = ["aioia", "infrastructure", "database", "fastapi"]
 
 [tool.poetry.dependencies]
