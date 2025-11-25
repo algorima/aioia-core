@@ -1,8 +1,6 @@
-import { BaseCrudRepository } from "@aioia/core";
 import { z } from "zod";
 
-import { ApiService } from "@/services/api";
-import type { BaseRecord } from "@/types/repository";
+import { BaseCrudRepository } from "../repositories/BaseCrudRepository";
 // 1. 테스트용 구체적인 Repository 클래스 정의
 interface TestData extends BaseRecord {
   name: string;
