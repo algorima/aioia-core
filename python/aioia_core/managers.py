@@ -1,62 +1,22 @@
 """
-Database infrastructure for AIoIA projects.
+Generic CRUD manager pattern for AIoIA projects.
 
-Provides SQLAlchemy base models and generic CRUD manager pattern.
+Provides BaseManager for database operations with pagination, filtering, and sorting.
 """
 
 from __future__ import annotations
 
-import uuid
 from abc import ABC
 from collections.abc import Callable
 from datetime import datetime, timezone
 from typing import Any, Generic, TypeVar
+from uuid import uuid4
 
 from pydantic import BaseModel as PydanticBaseModel
-from sqlalchemy import DateTime, MetaData, String, and_, desc, or_
-from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
+from sqlalchemy import and_, desc, or_
+from sqlalchemy.orm import Session
 
-# ==============================================================================
-# SQLAlchemy Base Models
-# ==============================================================================
-
-# Naming convention for database constraints
-naming_convention = {
-    "ix": "ix_%(column_0_label)s",
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
-    "ck": "ck_%(table_name)s_%(constraint_name)s",
-    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s",
-}
-
-metadata = MetaData(naming_convention=naming_convention)
-
-
-class Base(DeclarativeBase):
-    """The base class for all SQLAlchemy declarative models."""
-
-    metadata = metadata
-
-
-class BaseModel(Base):
-    """Base model with id, created_at, and updated_at fields."""
-
-    __abstract__ = True
-
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
-
-
-# ==============================================================================
-# Base Manager (Generic CRUD)
-# ==============================================================================
+from aioia_core.models import BaseModel
 
 ModelType = TypeVar("ModelType", bound=PydanticBaseModel)
 DBModelType = TypeVar("DBModelType", bound=BaseModel)

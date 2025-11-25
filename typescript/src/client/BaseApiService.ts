@@ -23,7 +23,7 @@ export interface ApiErrorData {
  * This class is environment-agnostic and can be extended for client-side and server-side implementations.
  */
 export abstract class BaseApiService {
-  protected readonly baseUrl: string;
+  readonly baseUrl: string;
 
   constructor(baseUrl?: string) {
     this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_BASE_URL || "";

@@ -1,0 +1,44 @@
+name: Python CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "python/**"
+      - ".github/workflows/**"
+
+jobs:
+  python-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Read Python version
+        id: python-version
+        run: echo "version=$(cat python/.python-version)" >> $GITHUB_OUTPUT
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ steps.python-version.outputs.version }}
+
+      - name: Install Dependencies
+        run: |
+          pip install poetry
+          poetry install
+        working-directory: python
+
+      - name: Lint
+        run: poetry run make lint
+        working-directory: python
+
+      - name: Type Check
+        run: poetry run make type-check
+        working-directory: python
+
+      - name: Test
+        run: poetry run make test
+        working-directory: python

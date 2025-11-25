@@ -4,12 +4,11 @@ AIoIA Core - Core infrastructure for AIoIA projects.
 Provides:
 - Database: SQLAlchemy base models and CRUD manager
 - Errors: Standardized error codes and responses
-- LLM: Language model provider abstractions
+- Settings: Common settings classes
 """
 
 __version__ = "0.1.0"
 
-from aioia_core.database import Base, BaseManager, BaseModel
 from aioia_core.errors import (
     INTERNAL_SERVER_ERROR,
     RESOURCE_NOT_FOUND,
@@ -19,19 +18,20 @@ from aioia_core.errors import (
     extract_error_code_from_exception,
     get_error_detail_from_exception,
 )
-from aioia_core.llm import (
-    AnthropicProvider,
-    BaseProvider,
-    ModelSettings,
-    OpenAIProvider,
-    ProviderRegistry,
-)
+from aioia_core.factories.base_manager_factory import BaseManagerFactory
+from aioia_core.managers import BaseManager
+from aioia_core.models import Base, BaseModel
+from aioia_core.protocols import CrudManagerProtocol, DatabaseManagerProtocol
+from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
 
 __all__ = [
     # Database
     "Base",
     "BaseModel",
     "BaseManager",
+    "BaseManagerFactory",
+    "CrudManagerProtocol",
+    "DatabaseManagerProtocol",
     # Errors
     "ErrorResponse",
     "UNAUTHORIZED",
@@ -40,10 +40,8 @@ __all__ = [
     "INTERNAL_SERVER_ERROR",
     "extract_error_code_from_exception",
     "get_error_detail_from_exception",
-    # LLM
-    "ModelSettings",
-    "BaseProvider",
-    "OpenAIProvider",
-    "AnthropicProvider",
-    "ProviderRegistry",
+    # Settings
+    "DatabaseSettings",
+    "OpenAIAPISettings",
+    "JWTSettings",
 ]
