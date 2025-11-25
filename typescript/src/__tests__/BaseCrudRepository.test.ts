@@ -33,7 +33,7 @@ const mockBuildUrl = jest
 const mockApiService = {
   request: mockRequest,
   buildUrl: mockBuildUrl,
-} as jest.Mocked<Partial<BaseApiService>>;
+} as unknown as BaseApiService;
 
 // 3. 테스트 시작
 describe("BaseCrudRepository", () => {
