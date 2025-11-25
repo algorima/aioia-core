@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { BaseApiService } from "../client/BaseApiService";
 import { BaseCrudRepository } from "../repositories/BaseCrudRepository";
 import type { BaseRecord } from "../repositories/types";
 
@@ -32,7 +33,7 @@ const mockBuildUrl = jest
 const mockApiService = {
   request: mockRequest,
   buildUrl: mockBuildUrl,
-} as any;  // Mock
+} as jest.Mocked<Partial<BaseApiService>>;
 
 // 3. 테스트 시작
 describe("BaseCrudRepository", () => {
