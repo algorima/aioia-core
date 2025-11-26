@@ -53,6 +53,4 @@ ignore = []
 
 [tool.semantic_release]
 version_toml = ["pyproject.toml:tool.poetry.version"]
-branch = "main"
-upload_to_pypi = true
 build_command = "poetry build"
