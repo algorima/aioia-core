@@ -4,9 +4,13 @@
     "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
   "parser": "@typescript-eslint/parser",
+  "plugins": ["import"],
   "parserOptions": {
     "ecmaVersion": 2021,
     "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    },
     "project": "./tsconfig.json"
   },
   "rules": {
@@ -23,10 +27,36 @@
         "caughtErrorsIgnorePattern": "^_"
       }
     ],
+    "@typescript-eslint/no-misused-promises": [
+      "error",
+      {
+        "checksVoidReturn": {
+          "attributes": false
+        }
+      }
+    ],
     "no-console": [
       "warn",
       {
         "allow": ["warn", "error", "debug"]
+      }
+    ],
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
       }
     ],
     "prefer-arrow-callback": "warn"
