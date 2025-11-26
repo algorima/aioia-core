@@ -41,7 +41,7 @@ export abstract class BaseApiService {
     const cleanPath = resourcePath.startsWith("/")
       ? resourcePath.slice(1)
       : resourcePath;
-    const prefix = this.apiPrefix ? `${this.apiPrefix}/` : "";
+    const prefix = this.apiPrefix ? `${this.apiPrefix}/` : "/";
     return `${this.baseUrl}${prefix}${cleanPath}`;
   }
 
