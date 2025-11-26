@@ -40,7 +40,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          semantic-release version
+          semantic-release version --no-push
           if [ -d "dist" ] && [ "$(ls -A dist)" ]; then
             echo "released=true" >> $GITHUB_OUTPUT
           else
