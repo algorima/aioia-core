@@ -7,24 +7,31 @@ on:
     paths:
       - 'typescript/**'
 
+permissions:
+  contents: read
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "lts/*"
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install
-        run: npm install
+        run: npm clean-install
         working-directory: typescript
 
       - name: Build
