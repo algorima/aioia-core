@@ -38,13 +38,11 @@ npm run type-check
 
 ## 커밋 컨벤션
 
-[Conventional Commits](https://www.conventionalcommits.org/) 형식 사용:
+[Conventional Commits](https://www.conventionalcommits.org/) 형식 사용.
 
-| 접두사 | 버전 변화 | 예시 |
-|--------|----------|------|
-| `fix:` | patch | `fix: 슬래시 누락 수정` |
-| `feat:` | minor | `feat: apiPrefix 설정 가능` |
-| `feat!:` | major | `feat!: API 변경` |
+**버전 변화**: `feat:`(minor), `fix:`(patch)만 버전 변경. 나머지(`docs:`, `chore:`, `ci:` 등)는 변경 없음.
+
+커밋 타입 전체 목록은 `.github/PULL_REQUEST_TEMPLATE.md` 참조.
 
 ## 라이선스
 
