@@ -33,15 +33,15 @@ jobs:
         working-directory: python
 
       - name: Lint
-        run: poetry run make lint
+        run: make lint
         working-directory: python
 
       - name: Type Check
-        run: poetry run make type-check
+        run: make type-check
         working-directory: python
 
       - name: Test
-        run: poetry run make test
+        run: make test
         working-directory: python
 
       - name: Build
