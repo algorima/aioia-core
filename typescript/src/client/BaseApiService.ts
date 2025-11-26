@@ -24,9 +24,11 @@ export interface ApiErrorData {
  */
 export abstract class BaseApiService {
   readonly baseUrl: string;
+  readonly apiPrefix: string;
 
-  constructor(baseUrl?: string) {
+  constructor(baseUrl?: string, apiPrefix = "/api/v2") {
     this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_BASE_URL || "";
+    this.apiPrefix = apiPrefix;
   }
 
   /**
@@ -39,7 +41,8 @@ export abstract class BaseApiService {
     const cleanPath = resourcePath.startsWith("/")
       ? resourcePath.slice(1)
       : resourcePath;
-    return `${this.baseUrl}/api/v2/${cleanPath}`;
+    const prefix = this.apiPrefix ? `${this.apiPrefix}/` : "/";
+    return `${this.baseUrl}${prefix}${cleanPath}`;
   }
 
   /**
