@@ -7,9 +7,15 @@ on:
     paths:
       - 'python/**'
 
+permissions:
+  contents: read
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -25,16 +31,15 @@ jobs:
         with:
           python-version: ${{ steps.python-version.outputs.version }}
 
-      - name: Install Poetry
-        run: pip install poetry
-
-      - name: Install dependencies
-        run: poetry install
-        working-directory: python
-
       - name: Release
-        run: poetry run semantic-release publish
-        working-directory: python
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
+        id: release
+        uses: python-semantic-release/python-semantic-release@v9
+        with:
+          directory: python
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        if: steps.release.outputs.released == 'true'
+        with:
+          packages-dir: python/dist
