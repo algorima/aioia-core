@@ -2,15 +2,19 @@ name: Publish Python to PyPI
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - 'python/**'
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Read Python version
         id: python-version
@@ -24,12 +28,13 @@ jobs:
       - name: Install Poetry
         run: pip install poetry
 
-      - name: Build
-        run: poetry build
+      - name: Install dependencies
+        run: poetry install
         working-directory: python
 
-      - name: Publish to PyPI
-        run: poetry publish
+      - name: Release
+        run: poetry run semantic-release publish
         working-directory: python
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_TOKEN }}
