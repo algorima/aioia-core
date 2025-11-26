@@ -2,15 +2,20 @@ name: Publish TypeScript to npm
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - 'typescript/**'
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -26,8 +31,9 @@ jobs:
         run: npm run build
         working-directory: typescript
 
-      - name: Publish
-        run: npm publish --access public
+      - name: Release
+        run: npx semantic-release
         working-directory: typescript
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
