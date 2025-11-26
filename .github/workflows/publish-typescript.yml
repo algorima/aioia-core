@@ -2,32 +2,45 @@ name: Publish TypeScript to npm
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - 'typescript/**'
+
+permissions:
+  contents: read
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: "lts/*"
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install
-        run: npm install
+        run: npm clean-install
         working-directory: typescript
 
       - name: Build
         run: npm run build
         working-directory: typescript
 
-      - name: Publish
-        run: npm publish --access public
+      - name: Release
+        run: npx semantic-release
         working-directory: typescript
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
