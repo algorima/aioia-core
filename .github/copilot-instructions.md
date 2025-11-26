@@ -7,6 +7,7 @@ When performing a code review, respond in Korean.
 - DRY: 공통 패턴 중복 금지
 - 제네릭: 타입 안정성 유지
 - 최소 의존성: 필수 패키지만 포함
+- 범용성: 특정 프로젝트 규칙 하드코딩 지양
 - Guard Clause: 함수 초반에 전제조건 검사, 실패 시 즉시 반환
 
 ## 보안
