@@ -36,10 +36,10 @@ jobs:
 
       - name: Release
         id: release
+        working-directory: python
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cd python
           semantic-release version
           if [ -d "dist" ] && [ "$(ls -A dist)" ]; then
             echo "released=true" >> $GITHUB_OUTPUT
