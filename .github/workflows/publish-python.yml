@@ -31,6 +31,9 @@ jobs:
         with:
           python-version: ${{ steps.python-version.outputs.version }}
 
+      - name: Install Poetry
+        run: pip install poetry
+
       - name: Release
         id: release
         uses: python-semantic-release/python-semantic-release@v9
