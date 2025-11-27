@@ -5,11 +5,8 @@ FastAPI + Next.js 풀스택 프로젝트용 공통 인프라
 ## 설치
 
 ```bash
-# Python
-pip install -e git+https://github.com/algorima/aioia-core.git#subdirectory=python
-
-# TypeScript
-npm install file:./aioia-core/typescript
+pip install aioia-core        # Python
+npm install @aioia/core       # TypeScript
 ```
 
 ## Python
@@ -39,7 +36,7 @@ filters = [{
     "value": [
         {"operator": "and", "value": [
             {"field": "role", "operator": "eq", "value": "admin"},
-            {"field": "active", "operator": "eq", "value": true}
+            {"field": "active", "operator": "eq", "value": True}
         ]},
         {"field": "email", "operator": "contains", "value": "@company.com"}
     ]
