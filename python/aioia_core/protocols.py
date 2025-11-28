@@ -6,7 +6,6 @@ Defines the interface for generic CRUD operations.
 
 from __future__ import annotations
 
-import warnings
 from typing import Any, Generic, Protocol, TypeVar
 
 from pydantic import BaseModel
@@ -136,27 +135,6 @@ RepositoryType = TypeVar("RepositoryType", bound=CrudRepositoryProtocol)
 
 
 # Deprecated aliases for backwards compatibility
-def __getattr__(name: str):
-    """Provide deprecated aliases for backwards compatibility."""
-    deprecated_mapping = {
-        "CrudManagerProtocol": "CrudRepositoryProtocol",
-        "DatabaseManagerProtocol": "DatabaseRepositoryProtocol",
-        "ManagerType": "RepositoryType",
-    }
-
-    if name in deprecated_mapping:
-        new_name = deprecated_mapping[name]
-        warnings.warn(
-            f"{name} is deprecated, use {new_name} instead",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return globals()[new_name]
-
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
-
-# Explicit aliases for type checkers and static analysis
 CrudManagerProtocol = CrudRepositoryProtocol
 DatabaseManagerProtocol = DatabaseRepositoryProtocol
 
