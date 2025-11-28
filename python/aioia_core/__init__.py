@@ -2,7 +2,7 @@
 AIoIA Core - Core infrastructure for AIoIA projects.
 
 Provides:
-- Database: SQLAlchemy base models and CRUD manager
+- Database: SQLAlchemy base models and CRUD repository
 - Errors: Standardized error codes and responses
 - Settings: Common settings classes
 """
@@ -18,16 +18,29 @@ from aioia_core.errors import (
     extract_error_code_from_exception,
     get_error_detail_from_exception,
 )
-from aioia_core.factories.base_manager_factory import BaseManagerFactory
-from aioia_core.managers import BaseManager
+from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 from aioia_core.models import Base, BaseModel
-from aioia_core.protocols import CrudManagerProtocol, DatabaseManagerProtocol
+from aioia_core.protocols import (
+    CrudRepositoryProtocol,
+    DatabaseRepositoryProtocol,
+)
+from aioia_core.repositories import BaseRepository
 from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
 
+# Deprecated imports for backwards compatibility
+from aioia_core.factories.base_manager_factory import BaseManagerFactory
+from aioia_core.managers import BaseManager
+from aioia_core.protocols import CrudManagerProtocol, DatabaseManagerProtocol
+
 __all__ = [
-    # Database
+    # Database - New names (recommended)
     "Base",
     "BaseModel",
+    "BaseRepository",
+    "BaseRepositoryFactory",
+    "CrudRepositoryProtocol",
+    "DatabaseRepositoryProtocol",
+    # Database - Deprecated aliases (backwards compatibility)
     "BaseManager",
     "BaseManagerFactory",
     "CrudManagerProtocol",

@@ -21,7 +21,7 @@ from aioia_core.errors import (
     RESOURCE_UPDATE_FAILED,
     ErrorResponse,
 )
-from aioia_core.protocols import ManagerType, ModelType
+from aioia_core.protocols import ModelType, RepositoryType
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -70,7 +70,7 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class BaseCrudRouter(
-    Generic[ModelType, CreateSchemaType, UpdateSchemaType, ManagerType]
+    Generic[ModelType, CreateSchemaType, UpdateSchemaType, RepositoryType]
 ):
     # pylint: disable=too-many-instance-attributes
     """
@@ -221,15 +221,15 @@ class BaseCrudRouter(
             assert user_id is not None, "Admin user must have user_id"
             return user_id
 
-        def get_manager(db: Session = Depends(get_db)) -> ManagerType:
-            """Manager dependency with simplified DB session handling"""
-            return self.manager_factory.create_manager(db)
+        def get_repository(db: Session = Depends(get_db)) -> RepositoryType:
+            """Repository dependency with simplified DB session handling"""
+            return self.manager_factory.create_repository(db)
 
         # Store as instance attributes
         self.get_db_dep = get_db
         self.get_current_user_role_dep = get_current_user_role
         self.get_admin_user_dep = get_admin_user
-        self.get_manager_dep = get_manager
+        self.get_repository_dep = get_repository
         self.get_current_user_id_dep = get_user_id_from_token
 
     def _register_routes(self) -> None:
@@ -279,11 +279,11 @@ class BaseCrudRouter(
                 description="Filter conditions (JSON format)",
             ),
             _admin_user: None = Depends(self.get_admin_user_dep),
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
         ):
             sort_list, filter_list = self._parse_query_params(sort_param, filters_param)
 
-            items, total = manager.get_all(
+            items, total = repository.get_all(
                 current=current,
                 page_size=page_size,
                 sort=sort_list,
@@ -327,10 +327,10 @@ class BaseCrudRouter(
         )
         async def create_item(
             item_data: create_schema_class = Body(...),  # type: ignore
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
             _auth: str = Depends(auth_dependency),
         ):
-            created_item = manager.create(item_data)
+            created_item = repository.create(item_data)
             if not created_item:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -365,9 +365,9 @@ class BaseCrudRouter(
         async def get_item(
             item_id: str,
             _admin_user: None = Depends(self.get_admin_user_dep),
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
         ):
-            item = self._get_item_or_404(manager, item_id)
+            item = self._get_item_or_404(repository, item_id)
             return SingleItemResponseModel(data=item)
 
     def _register_update_route(self) -> None:
@@ -396,9 +396,9 @@ class BaseCrudRouter(
             item_id: str,
             item_data: update_schema_class = Body(...),  # type: ignore
             _admin_user: None = Depends(self.get_admin_user_dep),
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
         ):
-            updated_item = manager.update(item_id, item_data)
+            updated_item = repository.update(item_id, item_data)
             if not updated_item:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -428,9 +428,9 @@ class BaseCrudRouter(
         async def delete_item(
             item_id: str,
             _admin_user: None = Depends(self.get_admin_user_dep),
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
         ):
-            if not manager.delete(item_id):
+            if not repository.delete(item_id):
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail={
@@ -449,9 +449,9 @@ class BaseCrudRouter(
                 }
             )
 
-    def _get_item_or_404(self, manager: ManagerType, item_id: str) -> ModelType:
+    def _get_item_or_404(self, repository: RepositoryType, item_id: str) -> ModelType:
         """Get item by ID or raise 404 HTTPException if not found."""
-        item = manager.get_by_id(item_id)
+        item = repository.get_by_id(item_id)
         if not item:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

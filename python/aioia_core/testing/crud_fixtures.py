@@ -6,8 +6,8 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import DateTime, Integer, String, or_
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-from aioia_core.protocols import DatabaseManagerProtocol
-from aioia_core.factories.base_manager_factory import BaseManagerFactory
+from aioia_core.protocols import DatabaseRepositoryProtocol
+from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 
 
 class Base(DeclarativeBase):
@@ -42,7 +42,7 @@ class TestUpdate(BaseModel):
     value: int | None = None
 
 
-class TestManager(DatabaseManagerProtocol[TestModel, TestCreate, TestUpdate]):
+class TestRepository(DatabaseRepositoryProtocol[TestModel, TestCreate, TestUpdate]):
     def __init__(self, db: Session):
         self.db = db
 
@@ -143,8 +143,13 @@ class TestManager(DatabaseManagerProtocol[TestModel, TestCreate, TestUpdate]):
         return True
 
 
-class TestManagerFactory(BaseManagerFactory[TestManager]):
-    """Unified manager factory for both Flask and FastAPI tests."""
+class TestRepositoryFactory(BaseRepositoryFactory[TestRepository]):
+    """Unified repository factory for both Flask and FastAPI tests."""
+
+
+# Deprecated alias for backwards compatibility
+TestManager = TestRepository
+TestManagerFactory = TestRepositoryFactory
 
 
 SECRET = "testsecret"
