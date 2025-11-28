@@ -8,7 +8,6 @@ for backwards compatibility. New code should use BaseRepository directly.
 from __future__ import annotations
 
 import unittest
-import warnings
 from datetime import datetime, timezone
 from typing import Any, Optional
 from uuid import uuid4

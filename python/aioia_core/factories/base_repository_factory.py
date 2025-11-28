@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from abc import ABC
 from typing import Generic, TypeVar
 
@@ -62,4 +63,9 @@ class BaseRepositoryFactory(ABC, Generic[RepositoryType]):
         This method is kept for backwards compatibility with existing code
         that uses the old BaseManagerFactory interface.
         """
+        warnings.warn(
+            "create_manager() is deprecated, use create_repository() instead",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         return self.create_repository(db_session)

@@ -1,4 +1,5 @@
 import json
+import warnings
 from collections.abc import Callable, Sequence
 from datetime import datetime, timezone
 from typing import Any, Generic, TypeVar
@@ -80,7 +81,7 @@ class BaseCrudRouter(
     All endpoints are protected by both JWT authentication and admin role verification.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         model_class: type[ModelType],
         create_schema: type[CreateSchemaType],
@@ -108,8 +109,6 @@ class BaseCrudRouter(
             tags: OpenAPI tags for the endpoints
             manager_factory: (Deprecated) Use repository_factory instead
         """
-        import warnings
-
         # Handle backwards compatibility
         if manager_factory is not None and repository_factory is None:
             warnings.warn(

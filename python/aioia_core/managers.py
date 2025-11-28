@@ -16,14 +16,6 @@ from __future__ import annotations
 
 import warnings
 
-# Issue deprecation warning when module is imported
-warnings.warn(
-    "aioia_core.managers module is deprecated. "
-    "Use aioia_core.repositories instead (BaseManager -> BaseRepository)",
-    DeprecationWarning,
-    stacklevel=2,
-)
-
 # Re-export from repositories module
 from aioia_core.repositories import (
     BaseRepository,
@@ -31,6 +23,14 @@ from aioia_core.repositories import (
     DBModelType,
     ModelType,
     UpdateSchemaType,
+)
+
+# Issue deprecation warning when module is imported
+warnings.warn(
+    "aioia_core.managers module is deprecated. "
+    "Use aioia_core.repositories instead (BaseManager -> BaseRepository)",
+    DeprecationWarning,
+    stacklevel=2,
 )
 
 # Explicit alias for type checkers and static analysis

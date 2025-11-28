@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib
 import sys
 import unittest
 import warnings
@@ -72,7 +71,7 @@ class TestDeprecationWarnings(unittest.TestCase):
 
             # Use deprecated parameter
             try:
-                router = BaseCrudRouter(
+                BaseCrudRouter(
                     model_class=DummyModel,
                     create_schema=DummyModel,
                     update_schema=DummyModel,

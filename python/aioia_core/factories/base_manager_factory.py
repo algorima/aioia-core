@@ -18,6 +18,13 @@ from __future__ import annotations
 import warnings
 from typing import TypeVar
 
+# Re-export from base_repository_factory module
+from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
+from aioia_core.protocols import DatabaseRepositoryProtocol
+
+# TypeVar for backwards compatibility (cannot alias TypeVar directly)
+ManagerType = TypeVar("ManagerType", bound=DatabaseRepositoryProtocol)
+
 # Issue deprecation warning when module is imported
 warnings.warn(
     "aioia_core.factories.base_manager_factory module is deprecated. "
@@ -25,13 +32,6 @@ warnings.warn(
     DeprecationWarning,
     stacklevel=2,
 )
-
-# Re-export from base_repository_factory module
-from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
-from aioia_core.protocols import DatabaseRepositoryProtocol
-
-# TypeVar for backwards compatibility (cannot alias TypeVar directly)
-ManagerType = TypeVar("ManagerType", bound=DatabaseRepositoryProtocol)
 
 # Explicit aliases for type checkers and static analysis
 BaseManagerFactory = BaseRepositoryFactory
