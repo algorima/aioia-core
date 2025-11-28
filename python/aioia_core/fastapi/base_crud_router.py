@@ -1,4 +1,5 @@
 import json
+import warnings
 from collections.abc import Callable, Sequence
 from datetime import datetime, timezone
 from typing import Any, Generic, TypeVar
@@ -21,7 +22,7 @@ from aioia_core.errors import (
     RESOURCE_UPDATE_FAILED,
     ErrorResponse,
 )
-from aioia_core.protocols import ManagerType, ModelType
+from aioia_core.protocols import ModelType, RepositoryType
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -70,7 +71,7 @@ UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class BaseCrudRouter(
-    Generic[ModelType, CreateSchemaType, UpdateSchemaType, ManagerType]
+    Generic[ModelType, CreateSchemaType, UpdateSchemaType, RepositoryType]
 ):
     # pylint: disable=too-many-instance-attributes
     """
@@ -80,17 +81,18 @@ class BaseCrudRouter(
     All endpoints are protected by both JWT authentication and admin role verification.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         model_class: type[ModelType],
         create_schema: type[CreateSchemaType],
         update_schema: type[UpdateSchemaType],
         db_session_factory: sessionmaker,
-        manager_factory,
         role_provider: UserRoleProvider | None,
         jwt_secret_key: str | None,
         resource_name: str,
         tags: Sequence[str],
+        repository_factory=None,
+        manager_factory=None,  # Deprecated
     ):
         """
         Initialize the CRUD router with concrete schema types and admin authentication.
@@ -100,17 +102,32 @@ class BaseCrudRouter(
             create_schema: The Pydantic schema class for create operations
             update_schema: The Pydantic schema class for update operations
             db_session_factory: SQLAlchemy session factory
-            manager_factory: Factory for creating database managers
+            repository_factory: Factory for creating database repositories
             role_provider: Provider for user role lookup (None = no auth)
             jwt_secret_key: JWT secret key for authentication
             resource_name: Name of the resource (for URLs and error messages)
             tags: OpenAPI tags for the endpoints
+            manager_factory: (Deprecated) Use repository_factory instead
         """
+        # Handle backwards compatibility
+        if manager_factory is not None and repository_factory is None:
+            warnings.warn(
+                "manager_factory parameter is deprecated, use repository_factory instead",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            repository_factory = manager_factory
+        elif manager_factory is not None and repository_factory is not None:
+            raise ValueError("Cannot specify both manager_factory and repository_factory")
+
+        if repository_factory is None:
+            raise ValueError("repository_factory is required")
+
         self.model_class = model_class
         self.create_schema = create_schema
         self.update_schema = update_schema
         self.db_session_factory = db_session_factory
-        self.manager_factory = manager_factory
+        self.repository_factory = repository_factory
         self.role_provider = role_provider
         self.jwt_secret_key = jwt_secret_key
         self.resource_name = resource_name
@@ -221,15 +238,15 @@ class BaseCrudRouter(
             assert user_id is not None, "Admin user must have user_id"
             return user_id
 
-        def get_manager(db: Session = Depends(get_db)) -> ManagerType:
-            """Manager dependency with simplified DB session handling"""
-            return self.manager_factory.create_manager(db)
+        def get_repository(db: Session = Depends(get_db)) -> RepositoryType:
+            """Repository dependency with simplified DB session handling"""
+            return self.repository_factory.create_repository(db)
 
         # Store as instance attributes
         self.get_db_dep = get_db
         self.get_current_user_role_dep = get_current_user_role
         self.get_admin_user_dep = get_admin_user
-        self.get_manager_dep = get_manager
+        self.get_repository_dep = get_repository
         self.get_current_user_id_dep = get_user_id_from_token
 
     def _register_routes(self) -> None:
@@ -279,11 +296,11 @@ class BaseCrudRouter(
                 description="Filter conditions (JSON format)",
             ),
             _admin_user: None = Depends(self.get_admin_user_dep),
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
         ):
             sort_list, filter_list = self._parse_query_params(sort_param, filters_param)
 
-            items, total = manager.get_all(
+            items, total = repository.get_all(
                 current=current,
                 page_size=page_size,
                 sort=sort_list,
@@ -327,10 +344,10 @@ class BaseCrudRouter(
         )
         async def create_item(
             item_data: create_schema_class = Body(...),  # type: ignore
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
             _auth: str = Depends(auth_dependency),
         ):
-            created_item = manager.create(item_data)
+            created_item = repository.create(item_data)
             if not created_item:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -365,9 +382,9 @@ class BaseCrudRouter(
         async def get_item(
             item_id: str,
             _admin_user: None = Depends(self.get_admin_user_dep),
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
         ):
-            item = self._get_item_or_404(manager, item_id)
+            item = self._get_item_or_404(repository, item_id)
             return SingleItemResponseModel(data=item)
 
     def _register_update_route(self) -> None:
@@ -396,9 +413,9 @@ class BaseCrudRouter(
             item_id: str,
             item_data: update_schema_class = Body(...),  # type: ignore
             _admin_user: None = Depends(self.get_admin_user_dep),
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
         ):
-            updated_item = manager.update(item_id, item_data)
+            updated_item = repository.update(item_id, item_data)
             if not updated_item:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -428,9 +445,9 @@ class BaseCrudRouter(
         async def delete_item(
             item_id: str,
             _admin_user: None = Depends(self.get_admin_user_dep),
-            manager: ManagerType = Depends(self.get_manager_dep),
+            repository: RepositoryType = Depends(self.get_repository_dep),
         ):
-            if not manager.delete(item_id):
+            if not repository.delete(item_id):
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail={
@@ -449,9 +466,9 @@ class BaseCrudRouter(
                 }
             )
 
-    def _get_item_or_404(self, manager: ManagerType, item_id: str) -> ModelType:
+    def _get_item_or_404(self, repository: RepositoryType, item_id: str) -> ModelType:
         """Get item by ID or raise 404 HTTPException if not found."""
-        item = manager.get_by_id(item_id)
+        item = repository.get_by_id(item_id)
         if not item:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

@@ -1,5 +1,5 @@
 """
-CRUD manager protocol definition for AIoIA projects.
+CRUD repository protocol definition for AIoIA projects.
 
 Defines the interface for generic CRUD operations.
 """
@@ -20,14 +20,14 @@ UpdateSchemaType_contra = TypeVar(
 )
 
 
-class CrudManagerProtocol(  # pylint: disable=unnecessary-ellipsis,redundant-returns-doc
+class CrudRepositoryProtocol(  # pylint: disable=unnecessary-ellipsis,redundant-returns-doc
     Protocol, Generic[ModelType, CreateSchemaType_contra, UpdateSchemaType_contra]
 ):
     """
     Protocol defining the basic CRUD operations interface.
 
     This protocol defines the interface for basic CRUD (Create, Read, Update, Delete)
-    operations. All CRUD managers must implement this protocol.
+    operations. All CRUD repositories must implement this protocol.
 
     Note: Protocol methods use ellipsis (...) as body, which is required by type checkers
     (pyright) to validate return types. Pylint's unnecessary-ellipsis warning is disabled
@@ -111,24 +111,45 @@ class CrudManagerProtocol(  # pylint: disable=unnecessary-ellipsis,redundant-ret
         ...
 
 
-class DatabaseManagerProtocol(
-    CrudManagerProtocol[ModelType, CreateSchemaType_contra, UpdateSchemaType_contra],
+class DatabaseRepositoryProtocol(
+    CrudRepositoryProtocol[ModelType, CreateSchemaType_contra, UpdateSchemaType_contra],
     Protocol,
 ):
     """
-    Protocol for database managers using SQLAlchemy sessions.
+    Protocol for database repositories using SQLAlchemy sessions.
 
-    This protocol extends CrudManagerProtocol to define the interface for managers
+    This protocol extends CrudRepositoryProtocol to define the interface for repositories
     that use database sessions.
     """
 
     def __init__(self, db_session: Session) -> None:
         """
-        Initialize database manager.
+        Initialize database repository.
 
         Args:
             db_session: SQLAlchemy database session
         """
 
 
-ManagerType = TypeVar("ManagerType", bound=CrudManagerProtocol)
+RepositoryType = TypeVar("RepositoryType", bound=CrudRepositoryProtocol)
+
+
+# Deprecated aliases for backwards compatibility
+CrudManagerProtocol = CrudRepositoryProtocol
+DatabaseManagerProtocol = DatabaseRepositoryProtocol
+
+# TypeVar aliases need to be redefined (cannot alias TypeVar directly)
+ManagerType = TypeVar("ManagerType", bound=CrudRepositoryProtocol)
+
+# For re-export compatibility, also export ModelType
+__all__ = [
+    # New names (recommended)
+    "CrudRepositoryProtocol",
+    "DatabaseRepositoryProtocol",
+    "RepositoryType",
+    "ModelType",
+    # Deprecated aliases (backwards compatibility)
+    "CrudManagerProtocol",
+    "DatabaseManagerProtocol",
+    "ManagerType",
+]

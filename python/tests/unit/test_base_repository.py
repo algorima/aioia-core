@@ -1,10 +1,3 @@
-"""
-Backwards compatibility test for BaseManager → BaseRepository rename.
-
-This test file verifies that the deprecated BaseManager import still works
-for backwards compatibility. New code should use BaseRepository directly.
-"""
-
 from __future__ import annotations
 
 import unittest
@@ -16,8 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-# Test backwards compatibility: importing from old location should still work
-from aioia_core.managers import BaseManager
+from aioia_core.repositories import BaseRepository
 from aioia_core.models import BaseModel as DBBaseModel
 from aioia_core.testing.database_manager import TestDatabaseManager
 
@@ -40,7 +32,7 @@ class TestModel(BaseModel):
 class DBTestModel(DBBaseModel):
     """테스트용 SQLAlchemy 모델"""
 
-    __tablename__ = "test_models"
+    __tablename__ = "test_repository_models"
 
     title: Mapped[str] = mapped_column(String, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
@@ -65,13 +57,8 @@ def convert_model_to_db_model(model: TestModel) -> dict[str, Any]:
     }
 
 
-class TestBaseManager(TestDatabaseManager):
-    """
-    BaseManager 클래스에 대한 단위 테스트 (하위 호환성)
-
-    이 테스트는 deprecated된 BaseManager가 여전히 동작하는지 확인합니다.
-    새 코드에서는 BaseRepository를 사용해야 합니다.
-    """
+class TestBaseRepository(TestDatabaseManager):
+    """BaseRepository 클래스에 대한 단위 테스트"""
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -81,8 +68,8 @@ class TestBaseManager(TestDatabaseManager):
     def setUp(self):
         """테스트 환경 설정"""
         super().setUp()
-        # BaseManager 인스턴스 생성 (deprecated alias)
-        self.manager = BaseManager[TestModel, DBTestModel, TestModel, TestModel](
+        # BaseRepository 인스턴스 생성
+        self.repository = BaseRepository[TestModel, DBTestModel, TestModel, TestModel](
             db_session=self.session,
             db_model=DBTestModel,
             convert_to_model=convert_db_model_to_model,
@@ -95,7 +82,7 @@ class TestBaseManager(TestDatabaseManager):
         test_model = TestModel(title="테스트 제목", content="테스트 내용")
 
         # 모델 생성
-        created_model = self.manager.create(test_model)
+        created_model = self.repository.create(test_model)
 
         # 검증
         assert created_model.id is not None, "생성된 모델의 ID가 None입니다"
@@ -116,11 +103,11 @@ class TestBaseManager(TestDatabaseManager):
         """get_by_id 메서드 테스트"""
         # 테스트 데이터 생성
         test_model = TestModel(title="테스트 제목", content="테스트 내용")
-        created_model = self.manager.create(test_model)
+        created_model = self.repository.create(test_model)
         assert created_model.id is not None, "생성된 모델의 ID가 None입니다"
 
         # ID로 조회
-        retrieved_model = self.manager.get_by_id(created_model.id)
+        retrieved_model = self.repository.get_by_id(created_model.id)
 
         # 검증
         self.assertIsNotNone(retrieved_model)
@@ -131,21 +118,21 @@ class TestBaseManager(TestDatabaseManager):
 
         # 존재하지 않는 ID로 조회
         non_existent_id = str(uuid4())
-        non_existent_model = self.manager.get_by_id(non_existent_id)
+        non_existent_model = self.repository.get_by_id(non_existent_id)
         self.assertIsNone(non_existent_model)
 
     def test_update(self):
         """update 메서드 테스트"""
         # 테스트 데이터 생성
         test_model = TestModel(title="테스트 제목", content="테스트 내용")
-        created_model = self.manager.create(test_model)
+        created_model = self.repository.create(test_model)
         assert created_model.id is not None, "생성된 모델의 ID가 None입니다"
 
         # 업데이트 데이터 생성
         update_model = TestModel(title="수정된 제목", content="수정된 내용")
 
         # 업데이트
-        updated_model = self.manager.update(created_model.id, update_model)
+        updated_model = self.repository.update(created_model.id, update_model)
 
         # 검증
         self.assertIsNotNone(updated_model)
@@ -163,18 +150,18 @@ class TestBaseManager(TestDatabaseManager):
 
         # 존재하지 않는 ID로 업데이트
         non_existent_id = str(uuid4())
-        non_existent_update = self.manager.update(non_existent_id, update_model)
+        non_existent_update = self.repository.update(non_existent_id, update_model)
         self.assertIsNone(non_existent_update)
 
     def test_delete(self):
         """delete 메서드 테스트"""
         # 테스트 데이터 생성
         test_model = TestModel(title="테스트 제목", content="테스트 내용")
-        created_model = self.manager.create(test_model)
+        created_model = self.repository.create(test_model)
         assert created_model.id is not None, "생성된 모델의 ID가 None입니다"
 
         # 삭제
-        delete_result = self.manager.delete(created_model.id)
+        delete_result = self.repository.delete(created_model.id)
 
         # 검증
         self.assertTrue(delete_result)
@@ -187,7 +174,7 @@ class TestBaseManager(TestDatabaseManager):
 
         # 존재하지 않는 ID로 삭제
         non_existent_id = str(uuid4())
-        non_existent_delete = self.manager.delete(non_existent_id)
+        non_existent_delete = self.repository.delete(non_existent_id)
         self.assertFalse(non_existent_delete)
 
     def test_get_all(self):
@@ -195,37 +182,37 @@ class TestBaseManager(TestDatabaseManager):
         # 테스트 데이터 생성
         for i in range(15):
             test_model = TestModel(title=f"제목 {i}", content=f"내용 {i}")
-            self.manager.create(test_model)
+            self.repository.create(test_model)
 
         # 페이지네이션 테스트
-        items, total = self.manager.get_all(current=1, page_size=10)
+        items, total = self.repository.get_all(current=1, page_size=10)
         self.assertEqual(len(items), 10)
         self.assertEqual(total, 15)
 
-        items, total = self.manager.get_all(current=2, page_size=10)
+        items, total = self.repository.get_all(current=2, page_size=10)
         self.assertEqual(len(items), 5)
         self.assertEqual(total, 15)
 
         # 정렬 테스트
-        items, _ = self.manager.get_all(sort=[("title", "asc")])
+        items, _ = self.repository.get_all(sort=[("title", "asc")])
         self.assertEqual(items[0].title, "제목 0")
 
-        items, _ = self.manager.get_all(sort=[("title", "desc")])
+        items, _ = self.repository.get_all(sort=[("title", "desc")])
         self.assertEqual(items[0].title, "제목 9")
 
         # 필터 테스트
-        items, total = self.manager.get_all(
+        items, total = self.repository.get_all(
             filters=[{"field": "title", "operator": "eq", "value": "제목 5"}]
         )
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0].title, "제목 5")
 
-        items, total = self.manager.get_all(
+        items, total = self.repository.get_all(
             filters=[{"field": "title", "operator": "contains", "value": "제목"}]
         )
         self.assertEqual(total, 15)
 
-        items, total = self.manager.get_all(
+        items, total = self.repository.get_all(
             filters=[
                 {"field": "title", "operator": "contains", "value": "제목"},
                 {"field": "content", "operator": "contains", "value": "내용 1"},
@@ -244,36 +231,36 @@ class TestBaseManager(TestDatabaseManager):
         ]
 
         for model in test_models:
-            self.manager.create(model)
+            self.repository.create(model)
 
         # eq (equals) 연산자 테스트
-        items, total = self.manager.get_all(
+        items, total = self.repository.get_all(
             filters=[{"field": "title", "operator": "eq", "value": "제목 A"}]
         )
         self.assertEqual(total, 1)
         self.assertEqual(items[0].title, "제목 A")
 
         # ne (not equals) 연산자 테스트
-        items, total = self.manager.get_all(
+        items, total = self.repository.get_all(
             filters=[{"field": "title", "operator": "ne", "value": "제목 A"}]
         )
         self.assertEqual(total, 3)
         self.assertNotIn("제목 A", [item.title for item in items])
 
         # contains 연산자 테스트
-        items, total = self.manager.get_all(
+        items, total = self.repository.get_all(
             filters=[{"field": "title", "operator": "contains", "value": "제목"}]
         )
         self.assertEqual(total, 4)
 
         # startswith 연산자 테스트
-        items, total = self.manager.get_all(
+        items, total = self.repository.get_all(
             filters=[{"field": "title", "operator": "startswith", "value": "제목"}]
         )
         self.assertEqual(total, 3)
 
         # endswith 연산자 테스트
-        items, total = self.manager.get_all(
+        items, total = self.repository.get_all(
             filters=[{"field": "title", "operator": "endswith", "value": "A"}]
         )
         self.assertEqual(total, 1)
@@ -289,7 +276,7 @@ class TestBaseManager(TestDatabaseManager):
             TestModel(title="Apple", content="Green fruit"),
         ]
         for model in test_models:
-            self.manager.create(model)
+            self.repository.create(model)
 
         # OR 조건 테스트
         # title이 'Apple' 이거나 content가 'Yellow fruit'인 경우
@@ -302,7 +289,7 @@ class TestBaseManager(TestDatabaseManager):
                 ],
             }
         ]
-        items, total = self.manager.get_all(filters=filters)
+        items, total = self.repository.get_all(filters=filters)
         self.assertEqual(total, 3)
         titles = {item.title for item in items}
         self.assertIn("Apple", titles)
@@ -329,7 +316,7 @@ class TestBaseManager(TestDatabaseManager):
                 ],
             }
         ]
-        items, total = self.manager.get_all(filters=filters)
+        items, total = self.repository.get_all(filters=filters)
         self.assertEqual(total, 2)
         retrieved_titles = {item.title for item in items}
         self.assertEqual(retrieved_titles, {"Apple", "Banana"})
