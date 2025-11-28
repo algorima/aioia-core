@@ -16,41 +16,37 @@ Migration guide:
 from __future__ import annotations
 
 import warnings
+from typing import TypeVar
 
 # Re-export from base_repository_factory module
-from aioia_core.factories.base_repository_factory import (
-    BaseRepositoryFactory,
-    RepositoryType,
-)
+from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
+from aioia_core.protocols import DatabaseRepositoryProtocol
+
+# TypeVar for backwards compatibility (cannot alias TypeVar directly)
+ManagerType = TypeVar("ManagerType", bound=DatabaseRepositoryProtocol)
 
 
 def __getattr__(name: str):
     """Provide deprecated aliases for backwards compatibility."""
-    deprecated_mapping = {
-        "BaseManagerFactory": "BaseRepositoryFactory",
-        "ManagerType": "RepositoryType",
-    }
-
-    if name in deprecated_mapping:
-        new_name = deprecated_mapping[name]
+    if name == "BaseManagerFactory":
         warnings.warn(
-            f"{name} is deprecated, use {new_name} instead. "
+            "BaseManagerFactory is deprecated, use BaseRepositoryFactory instead. "
             "Import from aioia_core.factories.base_repository_factory instead of "
             "aioia_core.factories.base_manager_factory",
             DeprecationWarning,
             stacklevel=2,
         )
-        return globals()[new_name]
+        return BaseRepositoryFactory
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 # Explicit aliases for type checkers and static analysis
 BaseManagerFactory = BaseRepositoryFactory
-ManagerType = RepositoryType
+# ManagerType is already defined above as a TypeVar
 
 __all__ = [
     # Deprecated aliases (backwards compatibility)
     "BaseManagerFactory",
-    "ManagerType",
+    "ManagerType",  # TypeVar for backwards compatibility
 ]

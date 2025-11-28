@@ -159,7 +159,9 @@ def __getattr__(name: str):
 # Explicit aliases for type checkers and static analysis
 CrudManagerProtocol = CrudRepositoryProtocol
 DatabaseManagerProtocol = DatabaseRepositoryProtocol
-ManagerType = RepositoryType
+
+# TypeVar aliases need to be redefined (cannot alias TypeVar directly)
+ManagerType = TypeVar("ManagerType", bound=CrudRepositoryProtocol)
 
 # For re-export compatibility, also export ModelType
 __all__ = [
