@@ -86,11 +86,12 @@ class BaseCrudRouter(
         create_schema: type[CreateSchemaType],
         update_schema: type[UpdateSchemaType],
         db_session_factory: sessionmaker,
-        manager_factory,
-        role_provider: UserRoleProvider | None,
-        jwt_secret_key: str | None,
-        resource_name: str,
-        tags: Sequence[str],
+        repository_factory=None,
+        role_provider: UserRoleProvider | None = None,
+        jwt_secret_key: str | None = None,
+        resource_name: str = "",
+        tags: Sequence[str] = (),
+        manager_factory=None,  # Deprecated
     ):
         """
         Initialize the CRUD router with concrete schema types and admin authentication.
@@ -100,17 +101,34 @@ class BaseCrudRouter(
             create_schema: The Pydantic schema class for create operations
             update_schema: The Pydantic schema class for update operations
             db_session_factory: SQLAlchemy session factory
-            manager_factory: Factory for creating database managers
+            repository_factory: Factory for creating database repositories
             role_provider: Provider for user role lookup (None = no auth)
             jwt_secret_key: JWT secret key for authentication
             resource_name: Name of the resource (for URLs and error messages)
             tags: OpenAPI tags for the endpoints
+            manager_factory: (Deprecated) Use repository_factory instead
         """
+        import warnings
+
+        # Handle backwards compatibility
+        if manager_factory is not None and repository_factory is None:
+            warnings.warn(
+                "manager_factory parameter is deprecated, use repository_factory instead",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            repository_factory = manager_factory
+        elif manager_factory is not None and repository_factory is not None:
+            raise ValueError("Cannot specify both manager_factory and repository_factory")
+
+        if repository_factory is None:
+            raise ValueError("repository_factory is required")
+
         self.model_class = model_class
         self.create_schema = create_schema
         self.update_schema = update_schema
         self.db_session_factory = db_session_factory
-        self.manager_factory = manager_factory
+        self.repository_factory = repository_factory
         self.role_provider = role_provider
         self.jwt_secret_key = jwt_secret_key
         self.resource_name = resource_name
@@ -223,7 +241,7 @@ class BaseCrudRouter(
 
         def get_repository(db: Session = Depends(get_db)) -> RepositoryType:
             """Repository dependency with simplified DB session handling"""
-            return self.manager_factory.create_repository(db)
+            return self.repository_factory.create_repository(db)
 
         # Store as instance attributes
         self.get_db_dep = get_db
