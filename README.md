@@ -18,7 +18,7 @@ from aioia_core.fastapi import BaseCrudRouter
 
 router = BaseCrudRouter(
     model_class=User, create_schema=UserCreate, update_schema=UserUpdate,
-    db_session_factory=SessionLocal, manager_factory=UserManagerFactory(),
+    db_session_factory=SessionLocal, repository_factory=UserRepositoryFactory(),
     role_provider=MyRoleProvider(), jwt_secret_key=settings.jwt_secret,
     resource_name="users", tags=["Users"]
 )
@@ -41,7 +41,7 @@ filters = [{
         {"field": "email", "operator": "contains", "value": "@company.com"}
     ]
 }]
-users, total = manager.get_all(filters=filters)
+users, total = repository.get_all(filters=filters)
 ```
 
 ## TypeScript
@@ -73,7 +73,7 @@ const { data, total } = await repo.getList({
 
 ### Python
 - BaseCrudRouter: JWT 인증, 역할 기반 권한, Sentry, camelCase↔snake_case 자동 변환
-- BaseManager: 페이지네이션, 정렬, 중첩 필터 (or/and), Protocol 기반 타입 안전성
+- BaseRepository: 페이지네이션, 정렬, 중첩 필터 (or/and), Protocol 기반 타입 안전성
 - Pydantic ↔ SQLAlchemy 분리
 
 ### TypeScript
