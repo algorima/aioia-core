@@ -21,7 +21,6 @@ python-jose = "^3.3.0"
 black = "^24.0.0"
 isort = "^5.13.0"
 mypy = "^1.8.0"
-python-semantic-release = "^9.0.0"
 ruff = "^0.1.0"
 pyright = "^1.1.407"
 pylint = "3.3.7"
@@ -56,5 +55,7 @@ select = ["E", "F", "W", "I", "N"]
 ignore = []
 
 [tool.semantic_release]
+allow_zero_version = true
+tag_format = "python-v{version}"
 version_toml = ["pyproject.toml:tool.poetry.version"]
 build_command = "poetry build"
