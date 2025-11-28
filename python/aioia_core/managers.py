@@ -16,7 +16,15 @@ from __future__ import annotations
 
 import warnings
 
-# Re-export from repositories module with deprecation warnings
+# Issue deprecation warning when module is imported
+warnings.warn(
+    "aioia_core.managers module is deprecated. "
+    "Use aioia_core.repositories instead (BaseManager -> BaseRepository)",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+# Re-export from repositories module
 from aioia_core.repositories import (
     BaseRepository,
     CreateSchemaType,
@@ -24,21 +32,6 @@ from aioia_core.repositories import (
     ModelType,
     UpdateSchemaType,
 )
-
-
-def __getattr__(name: str):
-    """Provide deprecated aliases for backwards compatibility."""
-    if name == "BaseManager":
-        warnings.warn(
-            "BaseManager is deprecated, use BaseRepository instead. "
-            "Import from aioia_core.repositories instead of aioia_core.managers",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return BaseRepository
-
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
 
 # Explicit alias for type checkers and static analysis
 BaseManager = BaseRepository

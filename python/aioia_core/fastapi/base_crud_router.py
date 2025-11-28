@@ -86,11 +86,11 @@ class BaseCrudRouter(
         create_schema: type[CreateSchemaType],
         update_schema: type[UpdateSchemaType],
         db_session_factory: sessionmaker,
+        role_provider: UserRoleProvider | None,
+        jwt_secret_key: str | None,
+        resource_name: str,
+        tags: Sequence[str],
         repository_factory=None,
-        role_provider: UserRoleProvider | None = None,
-        jwt_secret_key: str | None = None,
-        resource_name: str = "",
-        tags: Sequence[str] = (),
         manager_factory=None,  # Deprecated
     ):
         """
