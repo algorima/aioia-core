@@ -106,8 +106,8 @@ class TestDeprecationWarnings(unittest.TestCase):
         from aioia_core.testing.crud_fixtures import (
             Base,
             TestCreate,
-            TestManager,
-            TestManagerFactory,
+            TestRepository,
+            TestRepositoryFactory,
             TestModel,
             TestUpdate,
         )
@@ -122,15 +122,15 @@ class TestDeprecationWarnings(unittest.TestCase):
             )
             Base.metadata.create_all(engine)
             session_factory = sessionmaker(bind=engine)
-            manager_factory = TestManagerFactory(session_factory, TestManager)
+            repository_factory = TestRepositoryFactory(session_factory, TestRepository)
 
             # Create router instance (not calling .get_router() to keep instance)
-            router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+            router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestRepository](
                 model_class=TestModel,
                 create_schema=TestCreate,
                 update_schema=TestUpdate,
                 db_session_factory=session_factory,
-                repository_factory=manager_factory,
+                repository_factory=repository_factory,
                 role_provider=None,
                 jwt_secret_key=None,
                 resource_name="test",
