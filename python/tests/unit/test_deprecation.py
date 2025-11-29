@@ -2,9 +2,26 @@
 
 from __future__ import annotations
 
+import importlib
 import sys
+import tempfile
 import unittest
 import warnings
+from pathlib import Path
+
+from pydantic import BaseModel
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from aioia_core.fastapi import BaseCrudRouter
+from aioia_core.testing.crud_fixtures import (
+    Base,
+    TestCreate,
+    TestModel,
+    TestRepository,
+    TestRepositoryFactory,
+    TestUpdate,
+)
 
 
 class TestDeprecationWarnings(unittest.TestCase):
@@ -19,8 +36,8 @@ class TestDeprecationWarnings(unittest.TestCase):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
 
-            # Import deprecated module
-            import aioia_core.managers  # noqa: F401
+            # Import deprecated module using importlib
+            importlib.import_module("aioia_core.managers")
 
             # Verify warning was raised
             self.assertTrue(
@@ -41,7 +58,8 @@ class TestDeprecationWarnings(unittest.TestCase):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
 
-            import aioia_core.factories.base_manager_factory  # noqa: F401
+            # Import deprecated module using importlib
+            importlib.import_module("aioia_core.factories.base_manager_factory")
 
             self.assertTrue(
                 any(
@@ -54,10 +72,6 @@ class TestDeprecationWarnings(unittest.TestCase):
 
     def test_manager_factory_parameter_warning(self):
         """BaseCrudRouter with manager_factory parameter should raise DeprecationWarning."""
-        from pydantic import BaseModel
-        from sqlalchemy.orm import sessionmaker
-        from aioia_core.fastapi import BaseCrudRouter
-        from aioia_core.factories import BaseRepositoryFactory
 
         class DummyModel(BaseModel):
             id: str
@@ -82,8 +96,9 @@ class TestDeprecationWarnings(unittest.TestCase):
                     tags=["test"],
                     manager_factory=mock_repository_factory,  # Deprecated parameter
                 )
-            except Exception:
-                # Router initialization might fail due to mock objects, but we only care about the warning
+            except (TypeError, AttributeError):
+                # Router initialization might fail due to mock objects,
+                # but we only care about the warning
                 pass
 
             self.assertTrue(
@@ -95,22 +110,8 @@ class TestDeprecationWarnings(unittest.TestCase):
                 "manager_factory parameter should raise DeprecationWarning",
             )
 
-
     def test_get_manager_dep_deprecated_alias(self):
         """Accessing get_manager_dep should raise DeprecationWarning and work as alias."""
-        import tempfile
-        from pathlib import Path
-        from sqlalchemy import create_engine
-        from sqlalchemy.orm import sessionmaker
-        from aioia_core.fastapi import BaseCrudRouter
-        from aioia_core.testing.crud_fixtures import (
-            Base,
-            TestCreate,
-            TestRepository,
-            TestRepositoryFactory,
-            TestModel,
-            TestUpdate,
-        )
 
         # Create temporary database
         with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as temp_db:
