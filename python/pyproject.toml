@@ -58,4 +58,4 @@ ignore = []
 allow_zero_version = true
 tag_format = "python-v{version}"
 version_toml = ["pyproject.toml:tool.poetry.version"]
-build_command = "poetry build"
+build_command = "pip install build && python -m build"
