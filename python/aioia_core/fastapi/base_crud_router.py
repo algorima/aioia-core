@@ -246,8 +246,23 @@ class BaseCrudRouter(
         self.get_db_dep = get_db
         self.get_current_user_role_dep = get_current_user_role
         self.get_admin_user_dep = get_admin_user
-        self.get_repository_dep = get_repository
+        self._get_repository_dep = get_repository
         self.get_current_user_id_dep = get_user_id_from_token
+
+    @property
+    def get_repository_dep(self):
+        """Dependency function for getting repository instance."""
+        return self._get_repository_dep
+
+    @property
+    def get_manager_dep(self):
+        """Deprecated alias for get_repository_dep. Use get_repository_dep instead."""
+        warnings.warn(
+            "get_manager_dep is deprecated. Use get_repository_dep instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._get_repository_dep
 
     def _register_routes(self) -> None:
         """Register all CRUD routes with concrete type annotations"""
