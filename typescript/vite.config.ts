@@ -2,6 +2,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
+import pkg from "./package.json";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -14,12 +15,13 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-        "react",
+        // Automatically externalize peerDependencies
+        ...Object.keys(pkg.peerDependencies || {}),
+        // Automatically externalize dependencies (they install but don't bundle)
+        ...Object.keys(pkg.dependencies || {}),
+        // Add peer submodules explicitly
         "react-dom",
-        "next",
-        "next/navigation",
-        "zod",
-        "@sentry/nextjs",
+        /^next\//,
       ],
     },
   },
