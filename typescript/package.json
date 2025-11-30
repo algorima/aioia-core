@@ -2,14 +2,23 @@
   "name": "@aioia/core",
   "version": "0.1.0",
   "description": "Core infrastructure for AIoIA projects (TypeScript)",
-  "main": "dist/index.js",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "vite build",
+    "dev": "vite build --watch",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
     "test": "jest",
@@ -29,6 +38,9 @@
     "url": "https://github.com/algorima/aioia-core.git",
     "directory": "typescript"
   },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "peerDependencies": {
     "next": "^13.0.0 || ^14.0.0",
     "react": "^18.0.0",
@@ -38,9 +50,6 @@
     "@sentry/nextjs": "^7.0.0"
   },
   "devDependencies": {
-    "next": "^14.0.0",
-    "react": "^18.0.0",
-    "zod": "^3.23.0",
     "@types/jest": "^29.5.x",
     "@types/node": "^24.10.1",
     "@types/react": "^18.0.0",
@@ -49,10 +58,15 @@
     "eslint": "^8.0.0",
     "eslint-plugin-import": "^2.29.0",
     "jest": "^29.5.x",
+    "next": "^14.0.0",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
+    "react": "^18.0.0",
     "semantic-release": "^24.0.0",
     "ts-jest": "^29.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.5.4",
+    "zod": "^3.23.0"
   }
 }
