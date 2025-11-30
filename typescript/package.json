@@ -38,6 +38,9 @@
     "url": "https://github.com/algorima/aioia-core.git",
     "directory": "typescript"
   },
+  "engines": {
+    "node": ">=20.18.3"
+  },
   "peerDependencies": {
     "next": "^13.0.0 || ^14.0.0",
     "react": "^18.0.0",
