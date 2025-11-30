@@ -21,7 +21,6 @@ export default defineConfig({
         // Automatically externalize dependencies (they install but don't bundle)
         ...Object.keys(pkg.dependencies || {}),
         // Add peer submodules explicitly
-        "react-dom",
         /^next\//,
       ],
     },
