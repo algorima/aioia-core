@@ -39,7 +39,7 @@
     "directory": "typescript"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": ">=18.20.0"
   },
   "peerDependencies": {
     "next": "^13.0.0 || ^14.0.0",
