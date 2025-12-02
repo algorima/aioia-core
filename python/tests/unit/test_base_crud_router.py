@@ -84,7 +84,9 @@ class TestBaseCrudRouter(unittest.TestCase):
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine)
 
-        self.manager_factory = TestManagerFactory(self.SessionLocal, TestManager)
+        self.manager_factory = TestManagerFactory(
+            repository_class=TestManager, db_session_factory=self.SessionLocal
+        )
         self.role_provider = MockUserRoleProvider()
 
         # Create router
