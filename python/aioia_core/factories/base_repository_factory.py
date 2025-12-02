@@ -20,40 +20,49 @@ class BaseRepositoryFactory(ABC, Generic[RepositoryType]):
     기본 팩토리 패턴을 구현합니다.
 
     Args:
-        db_session_factory: SQLAlchemy 세션 팩토리
         repository_class: 생성할 레포지토리 클래스
+        db_session_factory: SQLAlchemy 세션 팩토리 (선택적, 독립 사용 시 필요)
     """
 
     def __init__(
         self,
-        db_session_factory: sessionmaker,
+        *,
         repository_class: type[RepositoryType],
+        db_session_factory: sessionmaker | None = None,
     ):
         """
         BaseRepositoryFactory 초기화
 
         Args:
-            db_session_factory: SQLAlchemy 세션 팩토리
             repository_class: 생성할 레포지토리 클래스
+            db_session_factory: SQLAlchemy 세션 팩토리 (선택적, 독립 사용 시 필요)
         """
-        self.db_session_factory = db_session_factory
         self.repository_class = repository_class
+        self.db_session_factory = db_session_factory
 
     def create_repository(self, db_session: Session | None = None) -> RepositoryType:
         """
         레포지토리 인스턴스를 생성합니다.
 
         이 메서드는 레포지토리 클래스의 인스턴스를 생성하고 반환합니다.
-        db_session이 제공되지 않은 경우 새로운 세션을 생성합니다.
+        db_session이 제공되지 않은 경우 db_session_factory를 사용하여 새로운 세션을 생성합니다.
 
         Args:
-            db_session: 선택적 데이터베이스 세션. None인 경우 새로운 세션을 생성합니다.
+            db_session: 선택적 데이터베이스 세션. None인 경우 db_session_factory를 사용합니다.
 
         Returns:
             생성된 레포지토리 인스턴스
+
+        Raises:
+            ValueError: db_session이 None이고 db_session_factory도 설정되지 않은 경우
         """
-        session = db_session if db_session is not None else self.db_session_factory()
-        return self.repository_class(session)
+        if db_session is not None:
+            return self.repository_class(db_session)
+        if self.db_session_factory is not None:
+            return self.repository_class(self.db_session_factory())
+        raise ValueError(
+            "db_session is required when db_session_factory is not configured"
+        )
 
     # Deprecated alias for backwards compatibility
     def create_manager(self, db_session: Session | None = None) -> RepositoryType:

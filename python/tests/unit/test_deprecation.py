@@ -123,7 +123,9 @@ class TestDeprecationWarnings(unittest.TestCase):
             )
             Base.metadata.create_all(engine)
             session_factory = sessionmaker(bind=engine)
-            repository_factory = TestRepositoryFactory(session_factory, TestRepository)
+            repository_factory = TestRepositoryFactory(
+                repository_class=TestRepository, db_session_factory=session_factory
+            )
 
             # Create router instance (not calling .get_router() to keep instance)
             router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestRepository](
