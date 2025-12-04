@@ -10,12 +10,17 @@
  *         - Better tree-shaking and explicit module boundaries
  */
 
-// API Client
+// Errors (synced with Python aioia_core.errors)
 export {
-  BaseApiService,
   ERROR_CODES,
-  QuotaExceededError,
-} from "./client/BaseApiService";
+  ApiError,
+  ServerError,
+  ClientError,
+} from "./errors";
+export type { ErrorCode } from "./errors";
+
+// API Client
+export { BaseApiService } from "./client/BaseApiService";
 export type { ApiErrorData } from "./client/BaseApiService";
 
 // Repository Pattern
