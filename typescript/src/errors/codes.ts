@@ -1,8 +1,6 @@
 /**
  * Error codes for consistent error handling across API endpoints.
  * These constants ensure standardized error identification for frontend applications.
- *
- * Synced with: aioia-core/python/aioia_core/errors/error_codes.py
  */
 
 // Authentication & Authorization errors
