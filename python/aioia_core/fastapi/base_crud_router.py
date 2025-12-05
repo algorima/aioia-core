@@ -23,7 +23,10 @@ from aioia_core.errors import (
     RESOURCE_UPDATE_FAILED,
     ErrorResponse,
 )
-from aioia_core.protocols import ModelType, RepositoryType
+from aioia_core.protocols import DatabaseRepositoryProtocol, ModelType, RepositoryType
+
+# TypeVar for _create_repository_dependency_from_factory method
+FactoryRepositoryType = TypeVar("FactoryRepositoryType", bound=DatabaseRepositoryProtocol)
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -266,8 +269,8 @@ class BaseCrudRouter(
         return self._get_repository_dep
 
     def _create_repository_dependency_from_factory(
-        self, factory: BaseRepositoryFactory[Any]
-    ) -> Callable:
+        self, factory: BaseRepositoryFactory[FactoryRepositoryType]
+    ) -> Callable[..., FactoryRepositoryType]:
         """
         Create a FastAPI dependency from a repository factory.
 
@@ -275,7 +278,7 @@ class BaseCrudRouter(
         that share the same DB session with the primary repository.
 
         Args:
-            factory (BaseRepositoryFactory[Any]): A repository factory instance.
+            factory (BaseRepositoryFactory[FactoryRepositoryType]): A repository factory instance.
 
         Returns:
             A FastAPI dependency function that returns the repository instance.
