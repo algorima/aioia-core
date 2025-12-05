@@ -22,3 +22,6 @@ alwaysApply: false
 
 ## PR 작성
 - PR 템플릿: `.github/PULL_REQUEST_TEMPLATE.md` 참고
+
+## 릴리즈
+- 자동화: main push 시 semantic-release로 자동 버전 관리 및 배포
