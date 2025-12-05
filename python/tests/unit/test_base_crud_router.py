@@ -408,5 +408,123 @@ class TestBaseCrudRouter(unittest.TestCase):
         self.assertEqual(data[0]["createdAt"], created_item_time)
 
 
+class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
+    """Test class for _create_repository_dependency_from_factory method"""
+
+    db_path: str
+
+    def setUp(self):
+        """Set up a new DB and FastAPI app for each test."""
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as temp_db:
+            self.db_path = temp_db.name
+
+        self.addCleanup(Path(self.db_path).unlink, missing_ok=True)
+
+        self.engine = create_engine(
+            f"sqlite:///{self.db_path}", connect_args={"check_same_thread": False}
+        )
+
+        Base.metadata.create_all(self.engine)
+        self.SessionLocal = sessionmaker(bind=self.engine)
+
+        self.manager_factory = TestManagerFactory(
+            repository_class=TestManager, db_session_factory=self.SessionLocal
+        )
+        self.role_provider = MockUserRoleProvider()
+
+    def tearDown(self):
+        """Drop all tables and dispose engine after each test."""
+        Base.metadata.drop_all(self.engine)
+        self.engine.dispose()
+
+    def test_create_repository_dependency_from_factory(self):
+        """Test that _create_repository_dependency_from_factory creates a working dependency."""
+        # Create router
+        crud_router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+            model_class=TestModel,
+            create_schema=TestCreate,
+            update_schema=TestUpdate,
+            db_session_factory=self.SessionLocal,
+            repository_factory=self.manager_factory,
+            role_provider=self.role_provider,
+            jwt_secret_key=SECRET,
+            resource_name="test-items",
+            tags=["TestItems"],
+        )
+
+        # Create a secondary repository factory (simulating StudioRepositoryFactory)
+        secondary_factory = TestManagerFactory(
+            repository_class=TestManager, db_session_factory=self.SessionLocal
+        )
+
+        # Use _create_repository_dependency_from_factory to create dependency
+        secondary_dep = crud_router._create_repository_dependency_from_factory(
+            secondary_factory
+        )
+
+        # Verify the dependency is callable
+        self.assertTrue(callable(secondary_dep))
+
+    def test_repository_dependency_shares_db_session(self):
+        """Test that repositories created from dependency share the same DB session."""
+        # Create a custom router subclass that exposes the dependency for testing
+        class TestableRouter(
+            BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager]
+        ):
+            def __init__(self, *args, secondary_factory, **kwargs):
+                super().__init__(*args, **kwargs)
+                self.get_secondary_repository_dep = (
+                    self._create_repository_dependency_from_factory(secondary_factory)
+                )
+                self._register_test_route()
+
+            def _register_test_route(self):
+                from fastapi import Depends
+
+                @self.router.get("/test-session-sharing")
+                async def test_session_sharing(
+                    primary_repo: TestManager = Depends(self.get_repository_dep),
+                    secondary_repo: TestManager = Depends(
+                        self.get_secondary_repository_dep
+                    ),
+                ):
+                    # Both repositories should have the same db session
+                    return {
+                        "primary_session_id": id(primary_repo.db),
+                        "secondary_session_id": id(secondary_repo.db),
+                        "same_session": primary_repo.db is secondary_repo.db,
+                    }
+
+        secondary_factory = TestManagerFactory(
+            repository_class=TestManager, db_session_factory=self.SessionLocal
+        )
+
+        router = TestableRouter(
+            model_class=TestModel,
+            create_schema=TestCreate,
+            update_schema=TestUpdate,
+            db_session_factory=self.SessionLocal,
+            repository_factory=self.manager_factory,
+            role_provider=self.role_provider,
+            jwt_secret_key=SECRET,
+            resource_name="test-items",
+            tags=["TestItems"],
+            secondary_factory=secondary_factory,
+        ).get_router()
+
+        app = FastAPI()
+        app.include_router(router)
+        test_client = TestClient(app)
+
+        # Call the test endpoint
+        resp = test_client.get("/test-session-sharing")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+
+        # Verify both repositories share the same DB session
+        self.assertTrue(data["same_session"])
+        self.assertEqual(data["primary_session_id"], data["secondary_session_id"])
+
+
 if __name__ == "__main__":
     unittest.main()
