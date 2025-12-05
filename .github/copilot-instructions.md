@@ -31,6 +31,10 @@ When performing a code review, respond in Korean.
 - Python: `snake_case.py`, `PascalCase`, `snake_case()`
 - TypeScript: `PascalCase.ts`, `camelCase()`, `index.ts`
 
+## 릴리즈
+
+- 자동화: main push 시 Conventional Commits 규약에 따라 semantic-release로 자동 버전 관리 및 배포
+
 ## 외부 기여
 
 - Atomic PR: 하나의 PR은 하나의 논리적 변경만 포함
