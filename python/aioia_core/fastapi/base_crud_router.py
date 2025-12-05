@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session, sessionmaker
 
 from aioia_core.auth import UserRole, UserRoleProvider
+from aioia_core.factories import BaseRepositoryFactory
 from aioia_core.errors import (
     FORBIDDEN,
     INVALID_QUERY_PARAMS,
@@ -22,7 +23,10 @@ from aioia_core.errors import (
     RESOURCE_UPDATE_FAILED,
     ErrorResponse,
 )
-from aioia_core.protocols import ModelType, RepositoryType
+from aioia_core.protocols import DatabaseRepositoryProtocol, ModelType, RepositoryType
+
+# TypeVar for _create_repository_dependency_from_factory method
+FactoryRepositoryType = TypeVar("FactoryRepositoryType", bound=DatabaseRepositoryProtocol)
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -263,6 +267,32 @@ class BaseCrudRouter(
             stacklevel=2,
         )
         return self._get_repository_dep
+
+    def _create_repository_dependency_from_factory(
+        self, factory: BaseRepositoryFactory[FactoryRepositoryType]
+    ) -> Callable[..., FactoryRepositoryType]:
+        """
+        Create a FastAPI dependency from a repository factory.
+
+        This allows creating dependencies for additional repositories (e.g., StudioRepository)
+        that share the same DB session with the primary repository.
+
+        Args:
+            factory (BaseRepositoryFactory[FactoryRepositoryType]): A repository factory instance.
+
+        Returns:
+            A FastAPI dependency function that returns the repository instance.
+
+        Example:
+            self.get_studio_repository_dep = self._create_repository_dependency_from_factory(
+                studio_repository_factory
+            )
+        """
+
+        def repository_dependency(db: Session = Depends(self.get_db_dep)):
+            return factory.create_repository(db)
+
+        return repository_dependency
 
     def _register_routes(self) -> None:
         """Register all CRUD routes with concrete type annotations"""
