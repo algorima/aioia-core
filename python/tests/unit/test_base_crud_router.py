@@ -3,7 +3,7 @@ import unittest
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 from jose import jwt
 from sqlalchemy import create_engine
@@ -479,8 +479,6 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
                 self._register_test_route()
 
             def _register_test_route(self):
-                from fastapi import Depends
-
                 @self.router.get("/test-session-sharing")
                 async def test_session_sharing(
                     primary_repo: TestManager = Depends(self.get_repository_dep),
