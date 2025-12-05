@@ -31,7 +31,7 @@
 
 ## 릴리즈
 
-- 자동화: main push 시 semantic-release로 자동 버전 관리 및 배포
+- 자동화: main push 시 Conventional Commits 규약에 따라 semantic-release로 자동 버전 관리 및 배포
 
 ## 외부 기여
 

@@ -24,4 +24,4 @@ alwaysApply: false
 - PR 템플릿: `.github/PULL_REQUEST_TEMPLATE.md` 참고
 
 ## 릴리즈
-- 자동화: main push 시 semantic-release로 자동 버전 관리 및 배포
+- 자동화: main push 시 Conventional Commits 규약에 따라 semantic-release로 자동 버전 관리 및 배포
