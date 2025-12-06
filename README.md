@@ -1,8 +1,11 @@
+## Project structure
+
+```text
 project/
   data/
-    posts.jsonl           # 원천 수집 후 정리 (텍스트/메타/이미지경로/라벨)
-    images/               # 이미지 파일들
+    posts.jsonl
+    images/
   outputs/
-    clip_embeds.npy       # 이미지 임베딩 캐시
+    clip_embeds.npy
     model.joblib
   notebook.ipynb
