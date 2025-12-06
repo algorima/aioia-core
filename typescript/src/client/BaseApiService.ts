@@ -5,14 +5,6 @@ export const ERROR_CODES = {
   VALIDATION_ERROR: "VALIDATION_ERROR",
 } as const;
 
-export class QuotaExceededError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "QuotaExceededError";
-    Object.setPrototypeOf(this, QuotaExceededError.prototype);
-  }
-}
-
 export interface ApiErrorData {
   code?: string;
   detail?: string;
