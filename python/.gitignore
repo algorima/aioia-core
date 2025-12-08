@@ -4,8 +4,8 @@ __pycache__/
 *.so
 
 # Distribution / packaging
-/dist/
-/build/
+dist/
+build/
 *.egg-info/
 
 # Testing / Type checking / Linting
