@@ -51,10 +51,3 @@ jobs:
       - name: Publish (dry-run)
         run: poetry publish --dry-run
         working-directory: python
-
-      - name: Verify Semantic Release Config
-        # --noop returns exit 1 on detached HEAD (PR), but config is still validated
-        run: poetry run semantic-release --noop version || true
-        working-directory: python
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
