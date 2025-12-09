@@ -40,3 +40,9 @@ jobs:
       - name: Publish (dry-run)
         run: npm publish --access public --dry-run
         working-directory: typescript
+
+      - name: Verify Semantic Release Config
+        run: npx semantic-release --dry-run
+        working-directory: typescript
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

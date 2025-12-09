@@ -56,6 +56,7 @@ ignore = []
 
 [tool.semantic_release]
 allow_zero_version = true
+commit_parser = "conventional"
 tag_format = "python-v{version}"
 version_toml = ["pyproject.toml:tool.poetry.version"]
 build_command = "python -m pip install build && python -m build"
