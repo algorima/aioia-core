@@ -51,3 +51,9 @@ jobs:
       - name: Publish (dry-run)
         run: poetry publish --dry-run
         working-directory: python
+
+      - name: Verify Semantic Release Config
+        run: poetry run semantic-release version --dry-run
+        working-directory: python
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
