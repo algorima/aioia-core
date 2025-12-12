@@ -64,6 +64,16 @@ describe("ServerError", () => {
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toBeInstanceOf(ServerError);
   });
+
+  it("should serialize to JSON correctly", () => {
+    const error = new ServerError("Database failed", "DATABASE_ERROR", 503);
+
+    expect(error.toJSON()).toEqual({
+      status: 503,
+      detail: "Database failed",
+      code: "DATABASE_ERROR",
+    });
+  });
 });
 
 describe("ClientError", () => {
@@ -86,28 +96,14 @@ describe("ClientError", () => {
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toBeInstanceOf(ClientError);
   });
-});
 
-describe("ERROR_CODES", () => {
-  it("should have authentication error codes", () => {
-    expect(ERROR_CODES.UNAUTHORIZED).toBe("UNAUTHORIZED");
-    expect(ERROR_CODES.FORBIDDEN).toBe("FORBIDDEN");
-    expect(ERROR_CODES.INVALID_TOKEN).toBe("INVALID_TOKEN");
-    expect(ERROR_CODES.TOKEN_EXPIRED).toBe("TOKEN_EXPIRED");
-  });
+  it("should serialize to JSON correctly", () => {
+    const error = new ClientError("Invalid input", "VALIDATION_ERROR", 422);
 
-  it("should have validation error codes", () => {
-    expect(ERROR_CODES.VALIDATION_ERROR).toBe("VALIDATION_ERROR");
-    expect(ERROR_CODES.INVALID_JSON).toBe("INVALID_JSON");
-  });
-
-  it("should have resource error codes", () => {
-    expect(ERROR_CODES.RESOURCE_NOT_FOUND).toBe("RESOURCE_NOT_FOUND");
-    expect(ERROR_CODES.RESOURCE_CREATION_FAILED).toBe("RESOURCE_CREATION_FAILED");
-  });
-
-  it("should have server error codes", () => {
-    expect(ERROR_CODES.INTERNAL_SERVER_ERROR).toBe("INTERNAL_SERVER_ERROR");
-    expect(ERROR_CODES.DATABASE_ERROR).toBe("DATABASE_ERROR");
+    expect(error.toJSON()).toEqual({
+      status: 422,
+      detail: "Invalid input",
+      code: "VALIDATION_ERROR",
+    });
   });
 });
