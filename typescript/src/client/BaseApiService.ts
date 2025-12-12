@@ -1,10 +1,5 @@
 import * as Sentry from "@sentry/nextjs";
 
-export const ERROR_CODES = {
-  INVALID_TOKEN: "INVALID_TOKEN",
-  VALIDATION_ERROR: "VALIDATION_ERROR",
-} as const;
-
 export interface ApiErrorData {
   code?: string;
   detail?: string;
