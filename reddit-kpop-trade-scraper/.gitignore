@@ -1,0 +1,24 @@
+# secrets
+.env
+*.env
+
+# data / outputs
+data/
+outputs/
+*.jsonl
+*.parquet
+*.csv
+
+# model / cache
+*.pt
+*.pth
+*.bin
+*.safetensors
+.cache/
+wandb/
+runs/
+
+# python junk
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
