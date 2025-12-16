@@ -1,9 +1,8 @@
 """Factory patterns for AIoIA projects."""
 
-from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
-
 # Deprecated alias for backwards compatibility
 from aioia_core.factories.base_manager_factory import BaseManagerFactory
+from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 
 __all__ = [
     # New name (recommended)
