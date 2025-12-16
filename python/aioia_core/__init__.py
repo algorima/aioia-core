@@ -48,10 +48,10 @@ __all__ = [
     "CrudRepositoryProtocol",
     "DatabaseRepositoryProtocol",
     # Database - Deprecated aliases (backwards compatibility, via __getattr__)
-    "BaseManager",
-    "BaseManagerFactory",
-    "CrudManagerProtocol",
-    "DatabaseManagerProtocol",
+    "BaseManager",  # pylint: disable=undefined-all-variable
+    "BaseManagerFactory",  # pylint: disable=undefined-all-variable
+    "CrudManagerProtocol",  # pylint: disable=undefined-all-variable
+    "DatabaseManagerProtocol",  # pylint: disable=undefined-all-variable
     # Errors
     "ErrorResponse",
     "UNAUTHORIZED",
