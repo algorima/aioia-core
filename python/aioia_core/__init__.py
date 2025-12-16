@@ -25,10 +25,7 @@ from aioia_core.errors import (
 )
 from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 from aioia_core.models import Base, BaseModel
-from aioia_core.protocols import (
-    CrudRepositoryProtocol,
-    DatabaseRepositoryProtocol,
-)
+from aioia_core.protocols import CrudRepositoryProtocol, DatabaseRepositoryProtocol
 from aioia_core.repositories import BaseRepository
 from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
 
