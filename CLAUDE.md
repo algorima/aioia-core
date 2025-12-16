@@ -19,6 +19,23 @@
 - TDD: Red → Green → Refactor
 - 모든 public API 테스트 커버리지
 
+## 코드 수정 후 필수 실행
+
+### Python
+Python 코드를 수정한 후에는 **반드시** `python/` 디렉토리에서 다음 명령을 실행하세요:
+1. `make format` - 코드 포맷팅 (isort, black)
+2. `make lint` - 린트 검사 (pylint)
+3. `make code-style` - 코드 스타일 검증
+4. `make type-check` - 타입 검사 (mypy, pyright)
+5. `make test` - 테스트 실행
+
+### TypeScript
+TypeScript 코드를 수정한 후에는 **반드시** `typescript/` 디렉토리에서 다음 명령을 실행하세요:
+1. `npm run lint` - ESLint 검사
+2. `npm run check-format` - Prettier 코드 포맷 검사
+3. `npm run type-check` - TypeScript 타입 검사
+4. `npm test` - 테스트 실행
+
 ## Python
 
 - SQLAlchemy Enum: `name="snake_case"` 명시
