@@ -28,7 +28,8 @@
     "type-check": "tsc --noEmit",
     "test": "jest",
     "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix"
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "check-format": "prettier --check ."
   },
   "keywords": [
     "aioia",
