@@ -25,7 +25,11 @@ import { BaseCrudRepository, BaseApiService } from "@aioia/core";
 const apiService = new BaseApiService("/api");
 
 // Repository
-class MyRepository extends BaseCrudRepository<MyModel, MyCreateData, MyUpdateData> {
+class MyRepository extends BaseCrudRepository<
+  MyModel,
+  MyCreateData,
+  MyUpdateData
+> {
   constructor(apiService: BaseApiService) {
     super("my-resource", mySchema, apiService);
   }
