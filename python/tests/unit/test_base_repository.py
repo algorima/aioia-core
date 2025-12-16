@@ -9,10 +9,10 @@ from pydantic import BaseModel
 from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
-from aioia_core.repositories import BaseRepository
-from aioia_core.types import CrudFilter
 from aioia_core.models import BaseModel as DBBaseModel
+from aioia_core.repositories import BaseRepository
 from aioia_core.testing.database_manager import TestDatabaseManager
+from aioia_core.types import CrudFilter
 
 
 # 테스트용 모델 정의

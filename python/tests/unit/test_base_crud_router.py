@@ -464,6 +464,7 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
 
     def test_repository_dependency_shares_db_session(self):
         """Test that repositories created from dependency share the same DB session."""
+
         # Create a custom router subclass that exposes the dependency for testing
         class TestableRouter(
             BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager]

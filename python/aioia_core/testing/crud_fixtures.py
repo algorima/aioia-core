@@ -6,8 +6,8 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import DateTime, Integer, String, or_
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-from aioia_core.types import DatabaseRepositoryProtocol
 from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
+from aioia_core.types import DatabaseRepositoryProtocol
 
 
 class Base(DeclarativeBase):

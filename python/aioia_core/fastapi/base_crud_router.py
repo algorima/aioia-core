@@ -13,7 +13,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session, sessionmaker
 
 from aioia_core.auth import UserInfoProvider, UserRole
-from aioia_core.factories import BaseRepositoryFactory
 from aioia_core.errors import (
     FORBIDDEN,
     INVALID_QUERY_PARAMS,
@@ -23,6 +22,7 @@ from aioia_core.errors import (
     RESOURCE_UPDATE_FAILED,
     ErrorResponse,
 )
+from aioia_core.factories import BaseRepositoryFactory
 from aioia_core.types import (
     CrudFilter,
     DatabaseRepositoryProtocol,
@@ -33,7 +33,9 @@ from aioia_core.types import (
 )
 
 # TypeVar for _create_repository_dependency_from_factory method
-FactoryRepositoryType = TypeVar("FactoryRepositoryType", bound=DatabaseRepositoryProtocol)
+FactoryRepositoryType = TypeVar(
+    "FactoryRepositoryType", bound=DatabaseRepositoryProtocol
+)
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -129,7 +131,9 @@ class BaseCrudRouter(
             )
             repository_factory = manager_factory
         elif manager_factory is not None and repository_factory is not None:
-            raise ValueError("Cannot specify both manager_factory and repository_factory")
+            raise ValueError(
+                "Cannot specify both manager_factory and repository_factory"
+            )
 
         if repository_factory is None:
             raise ValueError("repository_factory is required")
@@ -169,8 +173,9 @@ class BaseCrudRouter(
                 db.close()
 
         def get_user_id_from_token(
-            credentials: HTTPAuthorizationCredentials
-            | None = Depends(optional_security),
+            credentials: HTTPAuthorizationCredentials | None = Depends(
+                optional_security
+            ),
         ) -> str | None:
             """
             Decodes JWT and returns user_id.
@@ -345,15 +350,13 @@ class BaseCrudRouter(
         async def list_items(
             current: int = Query(1, ge=1, description="Current page number"),
             page_size: int = Query(10, ge=1, le=100, description="Items per page"),
-            sort_param: str
-            | None = Query(
+            sort_param: str | None = Query(
                 None,
                 alias="sort",
                 description='Sorting criteria in JSON format. Array of [field, order] pairs. Example: [["createdAt","desc"], ["name","asc"]]',
                 example='[["createdAt","desc"]]',
             ),
-            filters_param: str
-            | None = Query(
+            filters_param: str | None = Query(
                 None,
                 alias="filters",
                 description="Filter conditions (JSON format)",
