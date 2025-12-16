@@ -25,6 +25,14 @@ jobs:
         run: npm ci
         working-directory: typescript
 
+      - name: Lint
+        run: npm run lint
+        working-directory: typescript
+
+      - name: Check Format
+        run: npm run check-format
+        working-directory: typescript
+
       - name: Type Check
         run: npm run type-check
         working-directory: typescript
