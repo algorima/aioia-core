@@ -22,3 +22,6 @@ dist/
 # Environment
 .env
 .env.local
+twitter_API.txt
+project/
+
