@@ -19,3 +19,4 @@ joblib>=1.4.2
 requests>=2.32.0
 python-dotenv>=1.0.1
 tenacity>=9.0.0
+pandas>=2.0.0
