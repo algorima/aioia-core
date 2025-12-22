@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { CSSProperties, ComponentType } from "react";
 
-interface LottiePlayerProps {
+export interface LottiePlayerProps {
   src: string;
   className?: string;
   loop?: boolean;

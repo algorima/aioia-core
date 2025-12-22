@@ -29,3 +29,4 @@ export type * from "./repositories/types";
 
 // Components
 export { LottiePlayer } from "./components/LottiePlayer";
+export type { LottiePlayerProps } from "./components/LottiePlayer";
