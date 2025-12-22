@@ -17,12 +17,6 @@ const LoadingPlaceholder = ({ className }: { className?: string }) => (
   <div className={className} />
 );
 
-/**
- * A reusable component for rendering Lottie animations.
- * @param {LottiePlayerProps} props - The component props.
- * @param {string} props.src - The path to the Lottie JSON file.
- * @param {string} [props.className] - Additional class names to apply to the component.
- */
 const DynamicLottiePlayer = dynamic<LottiePlayerProps>(
   async () => {
     // 필요한 모듈들 임포트
@@ -54,7 +48,18 @@ const DynamicLottiePlayer = dynamic<LottiePlayerProps>(
   },
 );
 
-// 컴포넌트 내보내기
+/**
+ * Lottie 애니메이션을 렌더링하는 재사용 가능한 컴포넌트입니다.
+ * Next.js의 dynamic import를 사용하여 클라이언트 사이드에서만 렌더링됩니다.
+ *
+ * @param props 컴포넌트 props
+ * @param props.src Lottie JSON 파일의 경로 또는 URL
+ * @param [props.className] 컴포넌트에 적용할 추가 클래스 이름
+ * @param [props.loop=true] 애니메이션 반복 여부
+ * @param [props.autoplay] 자동 재생 여부. Chromatic 환경이 아닐 경우 기본값은 `true`입니다.
+ * @param [props.style] 컴포넌트에 적용할 인라인 스타일
+ * @param [props.speed] 애니메이션 재생 속도
+ */
 export function LottiePlayer(props: LottiePlayerProps) {
   return <DynamicLottiePlayer {...props} />;
 }
