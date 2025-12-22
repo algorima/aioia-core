@@ -26,3 +26,7 @@ export type { ApiErrorData } from "./client/BaseApiService";
 // Repository Pattern
 export { BaseCrudRepository } from "./repositories/BaseCrudRepository";
 export type * from "./repositories/types";
+
+// Components
+export { LottiePlayer } from "./components/LottiePlayer";
+export type { LottiePlayerProps } from "./components/LottiePlayer";
