@@ -13,9 +13,7 @@ export interface LottiePlayerProps {
 }
 
 // 로딩 상태를 위한 플레이스홀더 컴포넌트
-const LoadingPlaceholder = ({ className }: { className?: string }) => (
-  <div className={className} />
-);
+const LoadingPlaceholder = () => <div />;
 
 const DynamicLottiePlayer = dynamic<LottiePlayerProps>(
   async () => {
