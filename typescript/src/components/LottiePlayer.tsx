@@ -43,7 +43,7 @@ export function LottiePlayer({
       import("@lottiefiles/react-lottie-player"),
       import("chromatic/isChromatic"),
     ]).then(([{ Player }, { default: isChromatic }]) => {
-      setPlayerComponent(() => Player);
+      setPlayerComponent(() => Player as ComponentType<LottiePlayerProps>);
       setIsInChromatic(isChromatic());
     });
   }, []);
