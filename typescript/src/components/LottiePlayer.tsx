@@ -32,14 +32,14 @@ export function LottiePlayer({
 }: LottiePlayerProps) {
   const [mounted, setMounted] = useState(false);
   const [PlayerComponent, setPlayerComponent] =
-    useState<ComponentType<any> | null>(null);
+    useState<ComponentType<LottiePlayerProps> | null>(null);
   const [isInChromatic, setIsInChromatic] = useState(false);
 
   useEffect(() => {
     setMounted(true);
 
     // 클라이언트에서만 동적 import
-    Promise.all([
+    void Promise.all([
       import("@lottiefiles/react-lottie-player"),
       import("chromatic/isChromatic"),
     ]).then(([{ Player }, { default: isChromatic }]) => {
