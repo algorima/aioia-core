@@ -42,10 +42,15 @@ export function LottiePlayer({
     void Promise.all([
       import("@lottiefiles/react-lottie-player"),
       import("chromatic/isChromatic"),
-    ]).then(([{ Player }, { default: isChromatic }]) => {
-      setPlayerComponent(() => Player as ComponentType<LottiePlayerProps>);
-      setIsInChromatic(isChromatic());
-    });
+    ])
+      .then(([{ Player }, { default: isChromatic }]) => {
+        setPlayerComponent(() => Player as ComponentType<LottiePlayerProps>);
+        setIsInChromatic(isChromatic());
+      })
+      .catch((error) => {
+        console.error("[LottiePlayer] Failed to load dependencies:", error);
+        throw error;
+      });
   }, []);
 
   if (!mounted || !PlayerComponent) {
