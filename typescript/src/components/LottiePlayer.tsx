@@ -54,7 +54,7 @@ export function LottiePlayer({
   }, []);
 
   if (!mounted || !PlayerComponent) {
-    return <div />;
+    return <div {...rest} />;
   }
 
   return (
