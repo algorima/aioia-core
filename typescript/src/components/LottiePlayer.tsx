@@ -36,6 +36,7 @@ export function LottiePlayer({
   const [isInChromatic, setIsInChromatic] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     setMounted(true);
 
     // 클라이언트에서만 동적 import
@@ -44,13 +45,19 @@ export function LottiePlayer({
       import("chromatic/isChromatic"),
     ])
       .then(([{ Player }, { default: isChromatic }]) => {
-        setPlayerComponent(() => Player as ComponentType<LottiePlayerProps>);
-        setIsInChromatic(isChromatic());
+        if (isMounted) {
+          setPlayerComponent(() => Player as ComponentType<LottiePlayerProps>);
+          setIsInChromatic(isChromatic());
+        }
       })
       .catch((error) => {
         console.error("[LottiePlayer] Failed to load dependencies:", error);
         throw error;
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (!mounted || !PlayerComponent) {
