@@ -10,9 +10,13 @@ export default defineConfig({
   build: {
     sourcemap: true,
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
+      entry: {
+        index: resolve(__dirname, "src/index.ts"),
+        client: resolve(__dirname, "src/client.ts"),
+      },
       formats: ["es", "cjs"],
-      fileName: (format) => `index.${format === "es" ? "js" : "cjs"}`,
+      fileName: (format, entryName) =>
+        `${entryName}.${format === "es" ? "js" : "cjs"}`,
     },
     rollupOptions: {
       external: [
@@ -23,6 +27,15 @@ export default defineConfig({
         // Add peer submodules explicitly
         /^next\//,
       ],
+      output: {
+        banner: (chunk) => {
+          // Only add 'use client' to client entry point
+          if (chunk.name === "client") {
+            return '"use client";';
+          }
+          return "";
+        },
+      },
     },
   },
   plugins: [dts()],

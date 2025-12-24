@@ -12,8 +12,11 @@ npm install @aioia/core
 
 - **Client**: BaseApiService (HTTP 통신, 에러 처리)
 - **Repositories**: BaseCrudRepository (CRUD 패턴)
+- **Components** (클라이언트 전용): LottiePlayer (Lottie 애니메이션 렌더링)
 
 ## 사용법
+
+### 서버-세이프 모듈 (API, Repository)
 
 ```typescript
 import { BaseCrudRepository, BaseApiService } from "@aioia/core";
@@ -26,6 +29,24 @@ class MyRepository extends BaseCrudRepository<MyModel, MyCreateData, MyUpdateDat
   constructor(apiService: BaseApiService) {
     super("my-resource", mySchema, apiService);
   }
+}
+```
+
+### 클라이언트 컴포넌트 (use client 필수)
+
+```typescript
+"use client";
+
+import { LottiePlayer } from "@aioia/core/client";
+
+export default function AnimationComponent() {
+  return (
+    <LottiePlayer
+      src="https://example.com/animation.json"
+      loop
+      autoplay
+    />
+  );
 }
 ```
 
