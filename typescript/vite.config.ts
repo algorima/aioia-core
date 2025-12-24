@@ -23,6 +23,9 @@ export default defineConfig({
         // Add peer submodules explicitly
         /^next\//,
       ],
+      output: {
+        banner: '"use client";',
+      },
     },
   },
   plugins: [dts()],
