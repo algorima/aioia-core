@@ -36,6 +36,10 @@ jobs:
         run: make lint
         working-directory: python
 
+      - name: Check Code Style
+        run: make code-style
+        working-directory: python
+
       - name: Type Check
         run: make type-check
         working-directory: python

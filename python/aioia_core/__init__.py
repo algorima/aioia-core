@@ -7,6 +7,11 @@ Provides:
 - Settings: Common settings classes
 """
 
+from __future__ import annotations
+
+import importlib
+from typing import Any
+
 __version__ = "0.1.0"
 
 from aioia_core.errors import (
@@ -20,17 +25,9 @@ from aioia_core.errors import (
 )
 from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 from aioia_core.models import Base, BaseModel
-from aioia_core.protocols import (
-    CrudRepositoryProtocol,
-    DatabaseRepositoryProtocol,
-)
+from aioia_core.protocols import CrudRepositoryProtocol, DatabaseRepositoryProtocol
 from aioia_core.repositories import BaseRepository
 from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
-
-# Deprecated imports for backwards compatibility
-from aioia_core.factories.base_manager_factory import BaseManagerFactory
-from aioia_core.managers import BaseManager
-from aioia_core.protocols import CrudManagerProtocol, DatabaseManagerProtocol
 
 __all__ = [
     # Database - New names (recommended)
@@ -40,11 +37,11 @@ __all__ = [
     "BaseRepositoryFactory",
     "CrudRepositoryProtocol",
     "DatabaseRepositoryProtocol",
-    # Database - Deprecated aliases (backwards compatibility)
-    "BaseManager",
-    "BaseManagerFactory",
-    "CrudManagerProtocol",
-    "DatabaseManagerProtocol",
+    # Database - Deprecated aliases (backwards compatibility, via __getattr__)
+    "BaseManager",  # pylint: disable=undefined-all-variable
+    "BaseManagerFactory",  # pylint: disable=undefined-all-variable
+    "CrudManagerProtocol",  # pylint: disable=undefined-all-variable
+    "DatabaseManagerProtocol",  # pylint: disable=undefined-all-variable
     # Errors
     "ErrorResponse",
     "UNAUTHORIZED",
@@ -58,3 +55,25 @@ __all__ = [
     "OpenAIAPISettings",
     "JWTSettings",
 ]
+
+# Deprecated names for lazy loading via __getattr__
+_DEPRECATED_NAMES = {
+    "BaseManagerFactory": "aioia_core.factories.base_manager_factory",
+    "BaseManager": "aioia_core.managers",
+    "CrudManagerProtocol": "aioia_core.protocols",
+    "DatabaseManagerProtocol": "aioia_core.protocols",
+}
+
+
+def __getattr__(name: str) -> Any:
+    """PEP 562-style lazy loading of deprecated names."""
+    if name in _DEPRECATED_NAMES:
+        # The imported modules issue their own DeprecationWarning.
+        module = importlib.import_module(_DEPRECATED_NAMES[name])
+        return getattr(module, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__() -> list[str]:
+    """PEP 562-style module directory including deprecated names."""
+    return list(__all__)
