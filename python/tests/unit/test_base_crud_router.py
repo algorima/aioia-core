@@ -9,7 +9,7 @@ from jose import jwt
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from aioia_core.auth import UserRole
+from aioia_core.auth import UserInfo, UserRole
 from aioia_core.errors import FORBIDDEN, INVALID_TOKEN
 from aioia_core.fastapi import BaseCrudRouter
 from aioia_core.testing.crud_fixtures import (
@@ -32,32 +32,29 @@ def make_jwt(sub: str = "admin_user"):
     )
 
 
-class MockUserRoleProvider:
-    """Mock role provider for testing"""
+class MockUserInfoProvider:
+    """Mock user info provider for testing"""
 
-    def get_user_role(self, user_id: str, db):  # pylint: disable=unused-argument
-        """Return admin role for admin_user, regular role for others"""
-        if user_id == "admin_user":
-            return UserRole.ADMIN
-        if user_id == "regular_user":
-            return UserRole.USER
-        return None
+    _users = {
+        "admin_user": UserInfo(
+            user_id="admin_user",
+            username="admin",
+            nickname="Admin User",
+            email="admin@test.com",
+            role=UserRole.ADMIN,
+        ),
+        "regular_user": UserInfo(
+            user_id="regular_user",
+            username="user",
+            nickname="Regular User",
+            email="user@test.com",
+            role=UserRole.USER,
+        ),
+    }
 
-    def get_user_context(self, user_id: str, db):  # pylint: disable=unused-argument
-        """Return user context for monitoring"""
-        if user_id == "admin_user":
-            return {
-                "id": user_id,
-                "username": "admin",
-                "email": "admin@test.com",
-            }
-        if user_id == "regular_user":
-            return {
-                "id": user_id,
-                "username": "user",
-                "email": "user@test.com",
-            }
-        return None
+    def get_user_info(self, user_id: str, db) -> UserInfo | None:  # pylint: disable=unused-argument
+        """Return user info based on user_id"""
+        return self._users.get(user_id)
 
 
 class TestBaseCrudRouter(unittest.TestCase):
@@ -87,7 +84,7 @@ class TestBaseCrudRouter(unittest.TestCase):
         self.manager_factory = TestManagerFactory(
             repository_class=TestManager, db_session_factory=self.SessionLocal
         )
-        self.role_provider = MockUserRoleProvider()
+        self.role_provider = MockUserInfoProvider()
 
         # Create router
         self.router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
@@ -430,7 +427,7 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
         self.manager_factory = TestManagerFactory(
             repository_class=TestManager, db_session_factory=self.SessionLocal
         )
-        self.role_provider = MockUserRoleProvider()
+        self.role_provider = MockUserInfoProvider()
 
     def tearDown(self):
         """Drop all tables and dispose engine after each test."""

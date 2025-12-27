@@ -12,7 +12,7 @@ from jose import JWTError, jwt
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, sessionmaker
 
-from aioia_core.auth import UserRole, UserRoleProvider
+from aioia_core.auth import UserInfoProvider, UserRole
 from aioia_core.factories import BaseRepositoryFactory
 from aioia_core.errors import (
     FORBIDDEN,
@@ -91,7 +91,7 @@ class BaseCrudRouter(
         create_schema: type[CreateSchemaType],
         update_schema: type[UpdateSchemaType],
         db_session_factory: sessionmaker,
-        role_provider: UserRoleProvider | None,
+        role_provider: UserInfoProvider | None,
         jwt_secret_key: str | None,
         resource_name: str,
         tags: Sequence[str],
@@ -204,8 +204,8 @@ class BaseCrudRouter(
                 # No role provider = no authorization check
                 return None
 
-            user_role = self.role_provider.get_user_role(user_id, db)
-            if user_role is None:
+            user_info = self.role_provider.get_user_info(user_id, db)
+            if user_info is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail={
@@ -216,11 +216,15 @@ class BaseCrudRouter(
                 )
 
             # Set user context for monitoring tools (Sentry, DataDog, etc.)
-            user_context = self.role_provider.get_user_context(user_id, db)
-            if user_context:
-                sentry_sdk.set_user(user_context)
+            sentry_user = {
+                "id": user_info.user_id,
+                "username": user_info.username,
+            }
+            if user_info.email is not None:
+                sentry_user["email"] = user_info.email
+            sentry_sdk.set_user(sentry_user)
 
-            return user_role
+            return user_info.role
 
         def get_admin_user(
             user_id: str | None = Depends(get_user_id_from_token),
