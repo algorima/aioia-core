@@ -16,21 +16,23 @@ class UserRole(str, Enum):
 
 class UserInfo(BaseModel):
     """
-    User information model.
+    User information model (Buppy domain).
 
     Combines user identity, metadata, and role information.
     Designed for authorization and monitoring/observability tools.
 
-    Fields based on OIDC UserInfo standard:
-    - sub: Subject - Unique identifier for the user
+    Fields:
+    - user_id: Unique identifier
+    - username: Account name (used in Sentry, logging, JWT)
+    - nickname: Display name (used in UI, LLM, LiveKit)
     - email: Email address
-    - name: Display name
     - role: User's role in the system
     """
 
-    sub: str
+    user_id: str
+    username: str
+    nickname: str | None = None
     email: str | None = None
-    name: str | None = None
     role: UserRole
 
 
