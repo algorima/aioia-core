@@ -16,7 +16,7 @@ class UserRole(str, Enum):
 
 class UserInfo(BaseModel):
     """
-    User information model (Buppy domain).
+    User information model.
 
     Combines user identity, metadata, and role information.
     Designed for authorization and monitoring/observability tools.
