@@ -217,9 +217,9 @@ class BaseCrudRouter(
 
             # Set user context for monitoring tools (Sentry, DataDog, etc.)
             sentry_context = {
-                "id": user_info.sub,
+                "id": user_info.user_id,
                 "email": user_info.email,
-                "username": user_info.name,
+                "username": user_info.username,
             }
             sentry_sdk.set_user({k: v for k, v in sentry_context.items() if v is not None})
 
