@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import Protocol
 
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 
@@ -11,6 +12,26 @@ class UserRole(str, Enum):
 
     ADMIN = "admin"
     USER = "user"
+
+
+class UserInfo(BaseModel):
+    """
+    User information model.
+
+    Combines user identity, metadata, and role information.
+    Designed for authorization and monitoring/observability tools.
+
+    Fields based on OIDC UserInfo standard:
+    - sub: Subject - Unique identifier for the user
+    - email: Email address
+    - name: Display name
+    - role: User's role in the system
+    """
+
+    sub: str
+    email: str | None = None
+    name: str | None = None
+    role: UserRole
 
 
 class UserRoleProvider(Protocol):
