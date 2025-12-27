@@ -35,25 +35,26 @@ def make_jwt(sub: str = "admin_user"):
 class MockUserInfoProvider:
     """Mock user info provider for testing"""
 
+    _users = {
+        "admin_user": UserInfo(
+            user_id="admin_user",
+            username="admin",
+            nickname="Admin User",
+            email="admin@test.com",
+            role=UserRole.ADMIN,
+        ),
+        "regular_user": UserInfo(
+            user_id="regular_user",
+            username="user",
+            nickname="Regular User",
+            email="user@test.com",
+            role=UserRole.USER,
+        ),
+    }
+
     def get_user_info(self, user_id: str, db) -> UserInfo | None:  # pylint: disable=unused-argument
         """Return user info based on user_id"""
-        if user_id == "admin_user":
-            return UserInfo(
-                user_id=user_id,
-                username="admin",
-                nickname="Admin User",
-                email="admin@test.com",
-                role=UserRole.ADMIN,
-            )
-        if user_id == "regular_user":
-            return UserInfo(
-                user_id=user_id,
-                username="user",
-                nickname="Regular User",
-                email="user@test.com",
-                role=UserRole.USER,
-            )
-        return None
+        return self._users.get(user_id)
 
 
 class TestBaseCrudRouter(unittest.TestCase):
