@@ -51,9 +51,5 @@ class UserInfoProvider(Protocol):
         Args:
             user_id: User identifier
             db: Database session
-
-        Returns:
-            UserInfo with user's identity, role, and optional metadata.
-            None if user not found.
         """
         ...
