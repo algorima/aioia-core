@@ -34,34 +34,26 @@ class UserInfo(BaseModel):
     role: UserRole
 
 
-class UserRoleProvider(Protocol):
+class UserInfoProvider(Protocol):
     """
-    Protocol for retrieving user roles and context.
+    Protocol for retrieving user information.
 
     Projects implement this to integrate their user management system
     with BaseCrudRouter's authentication/authorization.
     """
 
-    def get_user_role(  # pylint: disable=unnecessary-ellipsis
+    def get_user_info(  # pylint: disable=unnecessary-ellipsis
         self, user_id: str, db: Session
-    ) -> UserRole | None:
+    ) -> UserInfo | None:
         """
-        Get user's role by ID.
+        Get user information including role and metadata.
 
         Args:
             user_id: User identifier
             db: Database session
-        """
-        ...
 
-    def get_user_context(  # pylint: disable=unnecessary-ellipsis
-        self, user_id: str, db: Session
-    ) -> dict | None:
-        """
-        Get user context for monitoring/observability tools.
-
-        Args:
-            user_id: User identifier
-            db: Database session
+        Returns:
+            UserInfo with user's identity, role, and optional metadata.
+            None if user not found.
         """
         ...
