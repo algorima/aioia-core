@@ -39,16 +39,18 @@ class MockUserInfoProvider:
         """Return user info based on user_id"""
         if user_id == "admin_user":
             return UserInfo(
-                sub=user_id,
+                user_id=user_id,
+                username="admin",
+                nickname="Admin User",
                 email="admin@test.com",
-                name="admin",
                 role=UserRole.ADMIN,
             )
         if user_id == "regular_user":
             return UserInfo(
-                sub=user_id,
+                user_id=user_id,
+                username="user",
+                nickname="Regular User",
                 email="user@test.com",
-                name="user",
                 role=UserRole.USER,
             )
         return None
