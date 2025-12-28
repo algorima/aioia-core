@@ -91,7 +91,7 @@ class BaseCrudRouter(
         create_schema: type[CreateSchemaType],
         update_schema: type[UpdateSchemaType],
         db_session_factory: sessionmaker,
-        role_provider: UserInfoProvider | None,
+        user_info_provider: UserInfoProvider | None,
         jwt_secret_key: str | None,
         resource_name: str,
         tags: Sequence[str],
@@ -107,7 +107,7 @@ class BaseCrudRouter(
             update_schema: The Pydantic schema class for update operations
             db_session_factory: SQLAlchemy session factory
             repository_factory: Factory for creating database repositories
-            role_provider: Provider for user role lookup (None = no auth)
+            user_info_provider: Provider for user information lookup (None = no auth)
             jwt_secret_key: JWT secret key for authentication
             resource_name: Name of the resource (for URLs and error messages)
             tags: OpenAPI tags for the endpoints
@@ -132,7 +132,7 @@ class BaseCrudRouter(
         self.update_schema = update_schema
         self.db_session_factory = db_session_factory
         self.repository_factory = repository_factory
-        self.role_provider = role_provider
+        self.user_info_provider = user_info_provider
         self.jwt_secret_key = jwt_secret_key
         self.resource_name = resource_name
         self.router = APIRouter(tags=list(tags))
@@ -200,11 +200,11 @@ class BaseCrudRouter(
             if not user_id:
                 return None
 
-            if not self.role_provider:
-                # No role provider = no authorization check
+            if not self.user_info_provider:
+                # No user info provider = no authorization check
                 return None
 
-            user_info = self.role_provider.get_user_info(user_id, db)
+            user_info = self.user_info_provider.get_user_info(user_id, db)
             if user_info is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,

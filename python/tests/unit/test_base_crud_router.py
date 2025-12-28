@@ -84,7 +84,7 @@ class TestBaseCrudRouter(unittest.TestCase):
         self.manager_factory = TestManagerFactory(
             repository_class=TestManager, db_session_factory=self.SessionLocal
         )
-        self.role_provider = MockUserInfoProvider()
+        self.user_info_provider = MockUserInfoProvider()
 
         # Create router
         self.router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
@@ -93,7 +93,7 @@ class TestBaseCrudRouter(unittest.TestCase):
             update_schema=TestUpdate,
             db_session_factory=self.SessionLocal,
             manager_factory=self.manager_factory,
-            role_provider=self.role_provider,
+            user_info_provider=self.user_info_provider,
             jwt_secret_key=SECRET,
             resource_name="test-items",
             tags=["TestItems"],
@@ -427,7 +427,7 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
         self.manager_factory = TestManagerFactory(
             repository_class=TestManager, db_session_factory=self.SessionLocal
         )
-        self.role_provider = MockUserInfoProvider()
+        self.user_info_provider = MockUserInfoProvider()
 
     def tearDown(self):
         """Drop all tables and dispose engine after each test."""
@@ -443,7 +443,7 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
             update_schema=TestUpdate,
             db_session_factory=self.SessionLocal,
             repository_factory=self.manager_factory,
-            role_provider=self.role_provider,
+            user_info_provider=self.user_info_provider,
             jwt_secret_key=SECRET,
             resource_name="test-items",
             tags=["TestItems"],
@@ -500,7 +500,7 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
             update_schema=TestUpdate,
             db_session_factory=self.SessionLocal,
             repository_factory=self.manager_factory,
-            role_provider=self.role_provider,
+            user_info_provider=self.user_info_provider,
             jwt_secret_key=SECRET,
             resource_name="test-items",
             tags=["TestItems"],
