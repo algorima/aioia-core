@@ -127,6 +127,13 @@ class BaseCrudRouter(
         if repository_factory is None:
             raise ValueError("repository_factory is required")
 
+        # Startup validation: JWT requires user_info_provider
+        if jwt_secret_key is not None and user_info_provider is None:
+            raise ValueError(
+                "user_info_provider is required when jwt_secret_key is provided. "
+                "JWT authentication cannot work without a way to look up user information."
+            )
+
         self.model_class = model_class
         self.create_schema = create_schema
         self.update_schema = update_schema

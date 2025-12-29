@@ -521,5 +521,93 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
         self.assertEqual(data["primary_session_id"], data["secondary_session_id"])
 
 
+class TestStartupValidation(unittest.TestCase):
+    """Test class for BaseCrudRouter startup validation"""
+
+    db_path: str
+
+    def setUp(self):
+        """Set up a new DB for each test."""
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as temp_db:
+            self.db_path = temp_db.name
+
+        self.addCleanup(Path(self.db_path).unlink, missing_ok=True)
+
+        self.engine = create_engine(
+            f"sqlite:///{self.db_path}", connect_args={"check_same_thread": False}
+        )
+
+        Base.metadata.create_all(self.engine)
+        self.SessionLocal = sessionmaker(bind=self.engine)
+
+        self.manager_factory = TestManagerFactory(
+            repository_class=TestManager, db_session_factory=self.SessionLocal
+        )
+        self.user_info_provider = MockUserInfoProvider()
+
+    def tearDown(self):
+        """Drop all tables and dispose engine after each test."""
+        Base.metadata.drop_all(self.engine)
+        self.engine.dispose()
+
+    def test_jwt_without_user_info_provider_raises_error(self):
+        """Test that providing jwt_secret_key without user_info_provider raises ValueError."""
+        with self.assertRaises(ValueError) as context:
+            BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+                model_class=TestModel,
+                create_schema=TestCreate,
+                update_schema=TestUpdate,
+                db_session_factory=self.SessionLocal,
+                repository_factory=self.manager_factory,
+                user_info_provider=None,  # No user_info_provider
+                jwt_secret_key=SECRET,  # But JWT is enabled
+                resource_name="test-items",
+                tags=["TestItems"],
+            )
+
+        self.assertIn(
+            "user_info_provider is required when jwt_secret_key is provided",
+            str(context.exception),
+        )
+
+    def test_no_jwt_without_user_info_provider_succeeds(self):
+        """Test that omitting both jwt_secret_key and user_info_provider is allowed."""
+        # This should NOT raise an error
+        router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+            model_class=TestModel,
+            create_schema=TestCreate,
+            update_schema=TestUpdate,
+            db_session_factory=self.SessionLocal,
+            repository_factory=self.manager_factory,
+            user_info_provider=None,
+            jwt_secret_key=None,
+            resource_name="test-items",
+            tags=["TestItems"],
+        )
+
+        self.assertIsNotNone(router)
+        self.assertIsNone(router.user_info_provider)
+        self.assertIsNone(router.jwt_secret_key)
+
+    def test_jwt_with_user_info_provider_succeeds(self):
+        """Test that providing both jwt_secret_key and user_info_provider succeeds."""
+        # This should NOT raise an error
+        router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+            model_class=TestModel,
+            create_schema=TestCreate,
+            update_schema=TestUpdate,
+            db_session_factory=self.SessionLocal,
+            repository_factory=self.manager_factory,
+            user_info_provider=self.user_info_provider,
+            jwt_secret_key=SECRET,
+            resource_name="test-items",
+            tags=["TestItems"],
+        )
+
+        self.assertIsNotNone(router)
+        self.assertEqual(router.user_info_provider, self.user_info_provider)
+        self.assertEqual(router.jwt_secret_key, SECRET)
+
+
 if __name__ == "__main__":
     unittest.main()
