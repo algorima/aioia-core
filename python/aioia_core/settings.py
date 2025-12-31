@@ -2,6 +2,7 @@
 
 from typing import ClassVar
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -70,3 +71,53 @@ class JWTSettings(BaseSettings):
 
     class Config:
         env_prefix = "JWT_"
+
+
+class FishAudioSettings(BaseSettings):
+    """
+    Fish Audio API settings.
+
+    Environment variables:
+        FISH_ENABLED: Enable/disable Fish Audio integration (default: False)
+        FISH_API_KEY: Fish Audio API key (required when enabled)
+    """
+
+    INI_SECTION: ClassVar[str] = "fish"
+
+    enabled: bool = False
+    api_key: str | None = None
+
+    class Config:
+        env_prefix = "FISH_"
+
+    @model_validator(mode="after")
+    def check_api_key(self) -> "FishAudioSettings":
+        """Validate that API key is present if the service is enabled."""
+        if self.enabled and not self.api_key:
+            raise ValueError("API key is required when Fish Audio is enabled.")
+        return self
+
+
+class HedraSettings(BaseSettings):
+    """
+    Hedra API settings.
+
+    Environment variables:
+        HEDRA_ENABLED: Enable/disable Hedra integration (default: False)
+        HEDRA_API_KEY: Hedra API key (required when enabled)
+    """
+
+    INI_SECTION: ClassVar[str] = "hedra"
+
+    enabled: bool = False
+    api_key: str | None = None
+
+    class Config:
+        env_prefix = "HEDRA_"
+
+    @model_validator(mode="after")
+    def check_api_key(self) -> "HedraSettings":
+        """Validate that API key is present if the service is enabled."""
+        if self.enabled and not self.api_key:
+            raise ValueError("API key is required when Hedra is enabled.")
+        return self
