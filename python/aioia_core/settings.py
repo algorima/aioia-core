@@ -132,7 +132,6 @@ class StorageSettings(BaseSettings):
         STORAGE_BUCKET_NAME: The name of the Google Cloud Storage bucket to use
         STORAGE_PROJECT_ID: Google Cloud project ID (optional)
         STORAGE_CREDENTIALS_PATH: Path to the Google Cloud service account JSON key file (optional)
-        STORAGE_CREDENTIALS_JSON: JSON string of Google Cloud service account credentials (optional)
     """
 
     INI_SECTION: ClassVar[str] = "storage"
@@ -141,7 +140,6 @@ class StorageSettings(BaseSettings):
     bucket_name: str = ""
     project_id: str | None = None
     credentials_path: str | None = None
-    credentials_json: str | None = None
 
     class Config:
         env_prefix = "STORAGE_"
