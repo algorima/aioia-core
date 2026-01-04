@@ -121,3 +121,25 @@ class HedraSettings(BaseSettings):
         if self.enabled and not self.api_key:
             raise ValueError("API key is required when Hedra is enabled.")
         return self
+
+
+class StorageSettings(BaseSettings):
+    """
+    Storage settings class for configuring storage clients.
+
+    Environment variables:
+        STORAGE_ENABLED: Enable/disable Google Cloud Storage (default: False)
+        STORAGE_BUCKET_NAME: The name of the Google Cloud Storage bucket to use
+        STORAGE_PROJECT_ID: Google Cloud project ID (optional)
+        STORAGE_CREDENTIALS_PATH: Path to the Google Cloud service account JSON key file (optional)
+    """
+
+    INI_SECTION: ClassVar[str] = "storage"
+
+    enabled: bool = False
+    bucket_name: str = ""
+    project_id: str | None = None
+    credentials_path: str | None = None
+
+    class Config:
+        env_prefix = "STORAGE_"
