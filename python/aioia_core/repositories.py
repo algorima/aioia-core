@@ -9,7 +9,7 @@ from __future__ import annotations
 from abc import ABC
 from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Any, Generic, TypeVar, cast
+from typing import Any, Generic, TypeVar
 from uuid import uuid4
 
 from pydantic import BaseModel as PydanticBaseModel
@@ -149,9 +149,7 @@ class BaseRepository(
                 and "value" in filter_item
                 and isinstance(filter_item["value"], list)
             ):
-                nested_conditions = self._build_filter_conditions(
-                    cast(list[CrudFilter], filter_item["value"])
-                )
+                nested_conditions = self._build_filter_conditions(filter_item["value"])
                 if nested_conditions:
                     if operator == "or":
                         conditions.append(or_(*nested_conditions))
