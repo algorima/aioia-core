@@ -2,7 +2,7 @@ import json
 import warnings
 from collections.abc import Callable, Sequence
 from datetime import datetime, timezone
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
 
 import sentry_sdk
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
@@ -544,7 +544,7 @@ class BaseCrudRouter(
         self, filters: list[CrudFilter]
     ) -> list[CrudFilter]:
         """Recursively traverses the filter structure and decamelizes field names."""
-        processed_filters = []
+        processed_filters: list[Any] = []
         for filter_item in filters:
             # Conditional Filter (or/and)
             if (
@@ -563,14 +563,14 @@ class BaseCrudRouter(
                 processed_filters.append(
                     {
                         **filter_item,
-                        "field": decamelize(str(filter_item["field"])),
+                        "field": decamelize(str(filter_item.get("field", ""))),
                     }
                 )
             # Unrecognized filter structure, append as is
             else:
                 processed_filters.append(filter_item)
 
-        return processed_filters
+        return cast(list[CrudFilter], processed_filters)
 
     def _parse_query_params(
         self, sort_param: str | None, filters_param: str | None
