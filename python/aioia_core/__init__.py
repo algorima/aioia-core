@@ -18,18 +18,16 @@ from aioia_core.errors import (
     extract_error_code_from_exception,
     get_error_detail_from_exception,
 )
-from aioia_core.filters import (
-    ConditionalFilter,
-    ConditionalOperator,
-    CrudFilter,
-    FilterOperator,
-    LogicalFilter,
-)
 from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 from aioia_core.models import Base, BaseModel
 from aioia_core.protocols import (
+    ConditionalFilter,
+    ConditionalOperator,
+    CrudFilter,
     CrudRepositoryProtocol,
     DatabaseRepositoryProtocol,
+    FilterOperator,
+    LogicalFilter,
 )
 from aioia_core.repositories import BaseRepository
 from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings

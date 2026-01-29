@@ -1,17 +1,64 @@
 """
-CRUD repository protocol definition for AIoIA projects.
+CRUD repository protocol and type definitions for AIoIA projects.
 
-Defines the interface for generic CRUD operations.
+Defines the interface for generic CRUD operations and filter types.
 """
 
 from __future__ import annotations
 
-from typing import Generic, Protocol, TypeVar
-
-from aioia_core.filters import CrudFilter
+from typing import Any, Generic, Literal, Protocol, TypedDict, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+# Filter type definitions (compatible with Refine's filter structure)
+FilterOperator = Literal[
+    "eq",
+    "ne",
+    "gt",
+    "gte",
+    "lt",
+    "lte",
+    "in",
+    "contains",
+    "startswith",
+    "endswith",
+    "null",
+    "nnull",
+]
+
+ConditionalOperator = Literal["or", "and"]
+
+
+class LogicalFilter(TypedDict, total=False):
+    """
+    Single field filter condition.
+
+    Example:
+        {"field": "status", "operator": "eq", "value": "active"}
+    """
+
+    field: str
+    operator: FilterOperator
+    value: Any
+
+
+class ConditionalFilter(TypedDict, total=False):
+    """
+    OR/AND combination filter.
+
+    Example:
+        {"operator": "or", "value": [
+            {"field": "status", "operator": "eq", "value": "active"},
+            {"field": "status", "operator": "eq", "value": "pending"}
+        ]}
+    """
+
+    operator: ConditionalOperator
+    value: list[CrudFilter]
+
+
+CrudFilter = LogicalFilter | ConditionalFilter
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
 CreateSchemaType_contra = TypeVar(
@@ -145,7 +192,13 @@ ManagerType = TypeVar("ManagerType", bound=CrudRepositoryProtocol)
 
 # For re-export compatibility, also export ModelType
 __all__ = [
-    # New names (recommended)
+    # Filter types
+    "CrudFilter",
+    "LogicalFilter",
+    "ConditionalFilter",
+    "FilterOperator",
+    "ConditionalOperator",
+    # Protocols (recommended)
     "CrudRepositoryProtocol",
     "DatabaseRepositoryProtocol",
     "RepositoryType",

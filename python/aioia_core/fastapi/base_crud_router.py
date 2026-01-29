@@ -23,8 +23,12 @@ from aioia_core.errors import (
     RESOURCE_UPDATE_FAILED,
     ErrorResponse,
 )
-from aioia_core.filters import CrudFilter
-from aioia_core.protocols import DatabaseRepositoryProtocol, ModelType, RepositoryType
+from aioia_core.protocols import (
+    CrudFilter,
+    DatabaseRepositoryProtocol,
+    ModelType,
+    RepositoryType,
+)
 
 # TypeVar for _create_repository_dependency_from_factory method
 FactoryRepositoryType = TypeVar("FactoryRepositoryType", bound=DatabaseRepositoryProtocol)

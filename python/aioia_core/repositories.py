@@ -16,8 +16,8 @@ from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy import ColumnElement, and_, desc, or_
 from sqlalchemy.orm import Session
 
-from aioia_core.filters import CrudFilter
 from aioia_core.models import BaseModel
+from aioia_core.protocols import CrudFilter
 
 ModelType = TypeVar("ModelType", bound=PydanticBaseModel)
 DBModelType = TypeVar("DBModelType", bound=BaseModel)
