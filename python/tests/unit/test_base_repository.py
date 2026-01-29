@@ -10,6 +10,7 @@ from sqlalchemy import String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from aioia_core.repositories import BaseRepository
+from aioia_core.types import CrudFilter
 from aioia_core.models import BaseModel as DBBaseModel
 from aioia_core.testing.database_manager import TestDatabaseManager
 
@@ -280,7 +281,7 @@ class TestBaseRepository(TestDatabaseManager):
 
         # OR 조건 테스트
         # title이 'Apple' 이거나 content가 'Yellow fruit'인 경우
-        filters = [
+        or_filters: list[CrudFilter] = [
             {
                 "operator": "or",
                 "value": [
@@ -289,7 +290,7 @@ class TestBaseRepository(TestDatabaseManager):
                 ],
             }
         ]
-        items, total = self.repository.get_all(filters=filters)
+        items, total = self.repository.get_all(filters=or_filters)
         self.assertEqual(total, 3)
         titles = {item.title for item in items}
         self.assertIn("Apple", titles)
@@ -297,7 +298,7 @@ class TestBaseRepository(TestDatabaseManager):
 
         # AND와 OR 중첩 조건 테스트
         # (title이 'Apple' AND content가 'Red fruit') OR (title이 'Banana')
-        filters = [
+        nested_filters: list[CrudFilter] = [
             {
                 "operator": "or",
                 "value": [
@@ -316,7 +317,7 @@ class TestBaseRepository(TestDatabaseManager):
                 ],
             }
         ]
-        items, total = self.repository.get_all(filters=filters)
+        items, total = self.repository.get_all(filters=nested_filters)
         self.assertEqual(total, 2)
         retrieved_titles = {item.title for item in items}
         self.assertEqual(retrieved_titles, {"Apple", "Banana"})
