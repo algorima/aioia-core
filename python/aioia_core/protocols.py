@@ -6,7 +6,9 @@ Defines the interface for generic CRUD operations.
 
 from __future__ import annotations
 
-from typing import Any, Generic, Protocol, TypeVar
+from typing import Generic, Protocol, TypeVar
+
+from aioia_core.filters import CrudFilter
 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -51,7 +53,7 @@ class CrudRepositoryProtocol(  # pylint: disable=unnecessary-ellipsis,redundant-
         current: int = 1,
         page_size: int = 10,
         sort: list[tuple[str, str]] | None = None,
-        filters: list[dict[str, Any]] | None = None,
+        filters: list[CrudFilter] | None = None,
     ) -> tuple[list[ModelType], int]:
         """
         Retrieve all items with pagination, sorting, and filtering.
@@ -61,7 +63,7 @@ class CrudRepositoryProtocol(  # pylint: disable=unnecessary-ellipsis,redundant-
             page_size: Number of items per page
             sort: Sort criteria as [(field, order), ...] where order is 'asc' or 'desc'
                 Example: [('created_at', 'desc'), ('name', 'asc')]
-            filters: Filter conditions as [{'field': str, 'operator': str, 'value': Any}, ...]
+            filters: Filter conditions as list of CrudFilter (LogicalFilter or ConditionalFilter)
                 Supported operators: eq, ne, contains, gt, gte, lt, lte, in, null, nnull, or, and
                 Example: [{'field': 'status', 'operator': 'eq', 'value': 'active'}]
 
