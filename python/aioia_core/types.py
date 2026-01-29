@@ -6,7 +6,7 @@ Defines the interface for generic CRUD operations and filter types.
 
 from __future__ import annotations
 
-from typing import Any, Generic, Literal, Protocol, TypedDict, TypeVar
+from typing import Any, Generic, Literal, NotRequired, Protocol, TypedDict, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -30,20 +30,21 @@ FilterOperator = Literal[
 ConditionalOperator = Literal["or", "and"]
 
 
-class LogicalFilter(TypedDict, total=False):
+class LogicalFilter(TypedDict):
     """
     Single field filter condition.
 
     Example:
         {"field": "status", "operator": "eq", "value": "active"}
+        {"field": "status", "operator": "null"}  # value not required for null/nnull
     """
 
     field: str
     operator: FilterOperator
-    value: Any
+    value: NotRequired[Any]
 
 
-class ConditionalFilter(TypedDict, total=False):
+class ConditionalFilter(TypedDict):
     """
     OR/AND combination filter.
 
