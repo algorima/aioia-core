@@ -20,7 +20,7 @@ from typing import TypeVar
 
 # Re-export from base_repository_factory module
 from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
-from aioia_core.protocols import DatabaseRepositoryProtocol
+from aioia_core.types import DatabaseRepositoryProtocol
 
 # TypeVar for backwards compatibility (cannot alias TypeVar directly)
 ManagerType = TypeVar("ManagerType", bound=DatabaseRepositoryProtocol)

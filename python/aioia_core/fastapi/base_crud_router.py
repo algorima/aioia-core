@@ -23,7 +23,7 @@ from aioia_core.errors import (
     RESOURCE_UPDATE_FAILED,
     ErrorResponse,
 )
-from aioia_core.protocols import (
+from aioia_core.types import (
     CrudFilter,
     DatabaseRepositoryProtocol,
     ModelType,
