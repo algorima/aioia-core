@@ -9,13 +9,14 @@ from __future__ import annotations
 from abc import ABC
 from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, cast
 from uuid import uuid4
 
 from pydantic import BaseModel as PydanticBaseModel
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import ColumnElement, and_, desc, or_
 from sqlalchemy.orm import Session
 
+from aioia_core.filters import CrudFilter
 from aioia_core.models import BaseModel
 
 ModelType = TypeVar("ModelType", bound=PydanticBaseModel)
@@ -76,7 +77,7 @@ class BaseRepository(
         current: int = 1,
         page_size: int = 10,
         sort: list[tuple[str, str]] | None = None,
-        filters: list[dict[str, Any]] | None = None,
+        filters: list[CrudFilter] | None = None,
         load_options: list[Any] | None = None,
     ) -> tuple[list[ModelType], int]:
         """
@@ -134,9 +135,11 @@ class BaseRepository(
 
         return [self.convert_to_model(item) for item in db_items], total
 
-    def _build_filter_conditions(self, filters: list[dict[str, Any]]) -> list[Any]:
+    def _build_filter_conditions(
+        self, filters: list[CrudFilter]
+    ) -> list[ColumnElement[bool]]:
         """Recursively builds SQLAlchemy filter conditions from filter criteria."""
-        conditions = []
+        conditions: list[ColumnElement[bool]] = []
         for filter_item in filters:
             operator = filter_item.get("operator")
 
@@ -146,7 +149,9 @@ class BaseRepository(
                 and "value" in filter_item
                 and isinstance(filter_item["value"], list)
             ):
-                nested_conditions = self._build_filter_conditions(filter_item["value"])
+                nested_conditions = self._build_filter_conditions(
+                    cast(list[CrudFilter], filter_item["value"])
+                )
                 if nested_conditions:
                     if operator == "or":
                         conditions.append(or_(*nested_conditions))
