@@ -49,7 +49,7 @@ class SingleItemResponse(BaseModel, Generic[ModelType]):
 class DeleteResponse(BaseModel):
     """Delete operation response model"""
 
-    data: dict[str, bool]
+    data: dict[str, Any]
 
 
 # TypeVar design decision: No contravariance for concrete router implementation
