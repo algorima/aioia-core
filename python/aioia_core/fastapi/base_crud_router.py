@@ -23,6 +23,7 @@ from aioia_core.errors import (
     RESOURCE_UPDATE_FAILED,
     ErrorResponse,
 )
+from aioia_core.filters import CrudFilter
 from aioia_core.protocols import DatabaseRepositoryProtocol, ModelType, RepositoryType
 
 # TypeVar for _create_repository_dependency_from_factory method
@@ -48,7 +49,7 @@ class SingleItemResponse(BaseModel, Generic[ModelType]):
 class DeleteResponse(BaseModel):
     """Delete operation response model"""
 
-    data: dict[str, Any]
+    data: dict[str, bool]
 
 
 # TypeVar design decision: No contravariance for concrete router implementation
@@ -536,8 +537,8 @@ class BaseCrudRouter(
         return item
 
     def _decamelize_filter_fields(
-        self, filters: list[dict[str, Any]]
-    ) -> list[dict[str, Any]]:
+        self, filters: list[CrudFilter]
+    ) -> list[CrudFilter]:
         """Recursively traverses the filter structure and decamelizes field names."""
         processed_filters = []
         for filter_item in filters:
