@@ -159,7 +159,7 @@ class BaseRepository(
 
             # Logical Filter
             field = filter_item.get("field")
-            if not field:
+            if not isinstance(field, str):
                 continue
 
             column = getattr(self.db_model, field, None)
