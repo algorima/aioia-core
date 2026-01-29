@@ -18,6 +18,13 @@ from aioia_core.errors import (
     extract_error_code_from_exception,
     get_error_detail_from_exception,
 )
+from aioia_core.filters import (
+    ConditionalFilter,
+    ConditionalOperator,
+    CrudFilter,
+    FilterOperator,
+    LogicalFilter,
+)
 from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 from aioia_core.models import Base, BaseModel
 from aioia_core.protocols import (
@@ -53,6 +60,12 @@ __all__ = [
     "INTERNAL_SERVER_ERROR",
     "extract_error_code_from_exception",
     "get_error_detail_from_exception",
+    # Filters
+    "CrudFilter",
+    "LogicalFilter",
+    "ConditionalFilter",
+    "FilterOperator",
+    "ConditionalOperator",
     # Settings
     "DatabaseSettings",
     "OpenAIAPISettings",
