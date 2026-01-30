@@ -28,6 +28,8 @@ from aioia_core.types import (
     DatabaseRepositoryProtocol,
     ModelType,
     RepositoryType,
+    is_conditional_filter,
+    is_logical_filter,
 )
 
 # TypeVar for _create_repository_dependency_from_factory method
@@ -546,27 +548,20 @@ class BaseCrudRouter(
         """Recursively traverses the filter structure and decamelizes field names."""
         processed_filters: list[Any] = []
         for filter_item in filters:
-            # Conditional Filter (or/and)
-            if (
-                filter_item.get("operator") in {"or", "and"}
-                and "value" in filter_item
-                and isinstance(filter_item["value"], list)
-            ):
+            if is_conditional_filter(filter_item):
                 processed_filters.append(
                     {
                         **filter_item,
                         "value": self._decamelize_filter_fields(filter_item["value"]),
                     }
                 )
-            # Logical Filter
-            elif "field" in filter_item:
+            elif is_logical_filter(filter_item):
                 processed_filters.append(
                     {
                         **filter_item,
-                        "field": decamelize(str(filter_item.get("field", ""))),
+                        "field": decamelize(filter_item["field"]),
                     }
                 )
-            # Unrecognized filter structure, append as is
             else:
                 processed_filters.append(filter_item)
 
