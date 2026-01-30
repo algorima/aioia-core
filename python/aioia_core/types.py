@@ -219,6 +219,8 @@ __all__ = [
     "ConditionalFilter",
     "FilterOperator",
     "ConditionalOperator",
+    "is_logical_filter",
+    "is_conditional_filter",
     # Protocols (recommended)
     "CrudRepositoryProtocol",
     "DatabaseRepositoryProtocol",
