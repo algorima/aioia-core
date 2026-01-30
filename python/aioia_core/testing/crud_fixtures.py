@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict
 from sqlalchemy import DateTime, Integer, String, or_
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-from aioia_core.protocols import DatabaseRepositoryProtocol
+from aioia_core.types import DatabaseRepositoryProtocol
 from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 
 
@@ -63,24 +63,30 @@ class TestRepository(DatabaseRepositoryProtocol[TestModel, TestCreate, TestUpdat
         if filters:
             # Simplified filter handling for tests, not a full implementation
             for f in filters:
-                if f["operator"] == "eq":
-                    column = getattr(TestDBModel, f["field"])
-                    value = f["value"]
+                op = f.get("operator")
+                field = f.get("field")
+                value = f.get("value")
+
+                if op == "eq" and field:
+                    column = getattr(TestDBModel, field)
                     if isinstance(column.type, DateTime) and isinstance(value, str):
                         value = datetime.fromisoformat(value)
                     q = q.filter(column == value)
-                elif f["operator"] == "in":
-                    q = q.filter(getattr(TestDBModel, f["field"]).in_(f["value"]))
-                elif f["operator"] == "null":
-                    q = q.filter(getattr(TestDBModel, f["field"]).is_(None))
-                elif f["operator"] == "nnull":
-                    q = q.filter(getattr(TestDBModel, f["field"]).isnot(None))
-                elif f["operator"] == "or":
+                elif op == "in" and field:
+                    q = q.filter(getattr(TestDBModel, field).in_(value))
+                elif op == "null" and field:
+                    q = q.filter(getattr(TestDBModel, field).is_(None))
+                elif op == "nnull" and field:
+                    q = q.filter(getattr(TestDBModel, field).isnot(None))
+                elif op == "or" and isinstance(value, list):
                     or_conditions = []
-                    for or_f in f["value"]:
-                        if or_f["operator"] == "eq":
+                    for or_f in value:
+                        or_op = or_f.get("operator")
+                        or_field = or_f.get("field")
+                        or_value = or_f.get("value")
+                        if or_op == "eq" and or_field:
                             or_conditions.append(
-                                getattr(TestDBModel, or_f["field"]) == or_f["value"]
+                                getattr(TestDBModel, or_field) == or_value
                             )
                     q = q.filter(or_(*or_conditions))
 

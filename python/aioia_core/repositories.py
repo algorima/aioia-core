@@ -13,10 +13,11 @@ from typing import Any, Generic, TypeVar
 from uuid import uuid4
 
 from pydantic import BaseModel as PydanticBaseModel
-from sqlalchemy import and_, desc, or_
+from sqlalchemy import ColumnElement, and_, desc, or_
 from sqlalchemy.orm import Session
 
 from aioia_core.models import BaseModel
+from aioia_core.types import CrudFilter, is_conditional_filter, is_logical_filter
 
 ModelType = TypeVar("ModelType", bound=PydanticBaseModel)
 DBModelType = TypeVar("DBModelType", bound=BaseModel)
@@ -76,7 +77,7 @@ class BaseRepository(
         current: int = 1,
         page_size: int = 10,
         sort: list[tuple[str, str]] | None = None,
-        filters: list[dict[str, Any]] | None = None,
+        filters: list[CrudFilter] | None = None,
         load_options: list[Any] | None = None,
     ) -> tuple[list[ModelType], int]:
         """
@@ -134,30 +135,26 @@ class BaseRepository(
 
         return [self.convert_to_model(item) for item in db_items], total
 
-    def _build_filter_conditions(self, filters: list[dict[str, Any]]) -> list[Any]:
+    def _build_filter_conditions(
+        self, filters: list[CrudFilter]
+    ) -> list[ColumnElement[bool]]:
         """Recursively builds SQLAlchemy filter conditions from filter criteria."""
-        conditions = []
+        conditions: list[ColumnElement[bool]] = []
         for filter_item in filters:
-            operator = filter_item.get("operator")
-
-            # Conditional Filter (or/and)
-            if (
-                operator in {"or", "and"}
-                and "value" in filter_item
-                and isinstance(filter_item["value"], list)
-            ):
+            if is_conditional_filter(filter_item):
                 nested_conditions = self._build_filter_conditions(filter_item["value"])
                 if nested_conditions:
-                    if operator == "or":
+                    if filter_item["operator"] == "or":
                         conditions.append(or_(*nested_conditions))
                     else:
                         conditions.append(and_(*nested_conditions))
                 continue
 
-            # Logical Filter
-            field = filter_item.get("field")
-            if not field:
+            if not is_logical_filter(filter_item):
                 continue
+
+            field = filter_item["field"]
+            operator = filter_item["operator"]
 
             column = getattr(self.db_model, field, None)
             if column is None:

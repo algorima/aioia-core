@@ -6,7 +6,7 @@ from typing import Generic, TypeVar
 
 from sqlalchemy.orm import Session, sessionmaker
 
-from aioia_core.protocols import DatabaseRepositoryProtocol
+from aioia_core.types import DatabaseRepositoryProtocol
 
 # RepositoryType을 DatabaseRepositoryProtocol에 바인딩
 RepositoryType = TypeVar("RepositoryType", bound=DatabaseRepositoryProtocol)

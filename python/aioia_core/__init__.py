@@ -20,9 +20,16 @@ from aioia_core.errors import (
 )
 from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 from aioia_core.models import Base, BaseModel
-from aioia_core.protocols import (
+from aioia_core.types import (
+    ConditionalFilter,
+    ConditionalOperator,
+    CrudFilter,
     CrudRepositoryProtocol,
     DatabaseRepositoryProtocol,
+    FilterOperator,
+    LogicalFilter,
+    is_conditional_filter,
+    is_logical_filter,
 )
 from aioia_core.repositories import BaseRepository
 from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
@@ -30,7 +37,7 @@ from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
 # Deprecated imports for backwards compatibility
 from aioia_core.factories.base_manager_factory import BaseManagerFactory
 from aioia_core.managers import BaseManager
-from aioia_core.protocols import CrudManagerProtocol, DatabaseManagerProtocol
+from aioia_core.types import CrudManagerProtocol, DatabaseManagerProtocol
 
 __all__ = [
     # Database - New names (recommended)
@@ -53,6 +60,14 @@ __all__ = [
     "INTERNAL_SERVER_ERROR",
     "extract_error_code_from_exception",
     "get_error_detail_from_exception",
+    # Filters
+    "CrudFilter",
+    "LogicalFilter",
+    "ConditionalFilter",
+    "FilterOperator",
+    "ConditionalOperator",
+    "is_logical_filter",
+    "is_conditional_filter",
     # Settings
     "DatabaseSettings",
     "OpenAIAPISettings",

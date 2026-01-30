@@ -1,15 +1,85 @@
 """
-CRUD repository protocol definition for AIoIA projects.
+CRUD repository protocol and type definitions for AIoIA projects.
 
-Defines the interface for generic CRUD operations.
+Defines the interface for generic CRUD operations and filter types.
 """
 
 from __future__ import annotations
 
-from typing import Any, Generic, Protocol, TypeVar
+from typing import (
+    Any,
+    Generic,
+    Literal,
+    NotRequired,
+    Protocol,
+    TypedDict,
+    TypeGuard,
+    TypeVar,
+)
 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+
+# Filter type definitions (compatible with Refine's filter structure)
+FilterOperator = Literal[
+    "eq",
+    "ne",
+    "gt",
+    "gte",
+    "lt",
+    "lte",
+    "in",
+    "contains",
+    "startswith",
+    "endswith",
+    "null",
+    "nnull",
+]
+
+ConditionalOperator = Literal["or", "and"]
+
+
+class LogicalFilter(TypedDict):
+    """
+    Single field filter condition.
+
+    Example:
+        {"field": "status", "operator": "eq", "value": "active"}
+        {"field": "status", "operator": "null"}  # value not required for null/nnull
+    """
+
+    field: str
+    operator: FilterOperator
+    value: NotRequired[Any]
+
+
+class ConditionalFilter(TypedDict):
+    """
+    OR/AND combination filter.
+
+    Example:
+        {"operator": "or", "value": [
+            {"field": "status", "operator": "eq", "value": "active"},
+            {"field": "status", "operator": "eq", "value": "pending"}
+        ]}
+    """
+
+    operator: ConditionalOperator
+    value: list[CrudFilter]
+
+
+CrudFilter = LogicalFilter | ConditionalFilter
+
+
+def is_logical_filter(f: CrudFilter) -> TypeGuard[LogicalFilter]:
+    """Type guard to narrow CrudFilter to LogicalFilter."""
+    return "field" in f
+
+
+def is_conditional_filter(f: CrudFilter) -> TypeGuard[ConditionalFilter]:
+    """Type guard to narrow CrudFilter to ConditionalFilter."""
+    return "field" not in f and "operator" in f
+
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
 CreateSchemaType_contra = TypeVar(
@@ -51,7 +121,7 @@ class CrudRepositoryProtocol(  # pylint: disable=unnecessary-ellipsis,redundant-
         current: int = 1,
         page_size: int = 10,
         sort: list[tuple[str, str]] | None = None,
-        filters: list[dict[str, Any]] | None = None,
+        filters: list[CrudFilter] | None = None,
     ) -> tuple[list[ModelType], int]:
         """
         Retrieve all items with pagination, sorting, and filtering.
@@ -61,7 +131,7 @@ class CrudRepositoryProtocol(  # pylint: disable=unnecessary-ellipsis,redundant-
             page_size: Number of items per page
             sort: Sort criteria as [(field, order), ...] where order is 'asc' or 'desc'
                 Example: [('created_at', 'desc'), ('name', 'asc')]
-            filters: Filter conditions as [{'field': str, 'operator': str, 'value': Any}, ...]
+            filters: Filter conditions as list of CrudFilter (LogicalFilter or ConditionalFilter)
                 Supported operators: eq, ne, contains, gt, gte, lt, lte, in, null, nnull, or, and
                 Example: [{'field': 'status', 'operator': 'eq', 'value': 'active'}]
 
@@ -140,16 +210,3 @@ DatabaseManagerProtocol = DatabaseRepositoryProtocol
 
 # TypeVar aliases need to be redefined (cannot alias TypeVar directly)
 ManagerType = TypeVar("ManagerType", bound=CrudRepositoryProtocol)
-
-# For re-export compatibility, also export ModelType
-__all__ = [
-    # New names (recommended)
-    "CrudRepositoryProtocol",
-    "DatabaseRepositoryProtocol",
-    "RepositoryType",
-    "ModelType",
-    # Deprecated aliases (backwards compatibility)
-    "CrudManagerProtocol",
-    "DatabaseManagerProtocol",
-    "ManagerType",
-]
