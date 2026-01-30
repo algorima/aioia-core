@@ -210,24 +210,3 @@ DatabaseManagerProtocol = DatabaseRepositoryProtocol
 
 # TypeVar aliases need to be redefined (cannot alias TypeVar directly)
 ManagerType = TypeVar("ManagerType", bound=CrudRepositoryProtocol)
-
-# For re-export compatibility, also export ModelType
-__all__ = [
-    # Filter types
-    "CrudFilter",
-    "LogicalFilter",
-    "ConditionalFilter",
-    "FilterOperator",
-    "ConditionalOperator",
-    "is_logical_filter",
-    "is_conditional_filter",
-    # Protocols (recommended)
-    "CrudRepositoryProtocol",
-    "DatabaseRepositoryProtocol",
-    "RepositoryType",
-    "ModelType",
-    # Deprecated aliases (backwards compatibility)
-    "CrudManagerProtocol",
-    "DatabaseManagerProtocol",
-    "ManagerType",
-]
