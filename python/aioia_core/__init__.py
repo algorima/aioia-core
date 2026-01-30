@@ -28,6 +28,8 @@ from aioia_core.types import (
     DatabaseRepositoryProtocol,
     FilterOperator,
     LogicalFilter,
+    is_conditional_filter,
+    is_logical_filter,
 )
 from aioia_core.repositories import BaseRepository
 from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
@@ -64,6 +66,8 @@ __all__ = [
     "ConditionalFilter",
     "FilterOperator",
     "ConditionalOperator",
+    "is_logical_filter",
+    "is_conditional_filter",
     # Settings
     "DatabaseSettings",
     "OpenAIAPISettings",

@@ -6,7 +6,16 @@ Defines the interface for generic CRUD operations and filter types.
 
 from __future__ import annotations
 
-from typing import Any, Generic, Literal, NotRequired, Protocol, TypedDict, TypeVar
+from typing import (
+    Any,
+    Generic,
+    Literal,
+    NotRequired,
+    Protocol,
+    TypedDict,
+    TypeGuard,
+    TypeVar,
+)
 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -60,6 +69,17 @@ class ConditionalFilter(TypedDict):
 
 
 CrudFilter = LogicalFilter | ConditionalFilter
+
+
+def is_logical_filter(f: CrudFilter) -> TypeGuard[LogicalFilter]:
+    """Type guard to narrow CrudFilter to LogicalFilter."""
+    return "field" in f
+
+
+def is_conditional_filter(f: CrudFilter) -> TypeGuard[ConditionalFilter]:
+    """Type guard to narrow CrudFilter to ConditionalFilter."""
+    return "field" not in f and "operator" in f
+
 
 ModelType = TypeVar("ModelType", bound=BaseModel)
 CreateSchemaType_contra = TypeVar(
