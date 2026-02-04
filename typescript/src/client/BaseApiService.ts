@@ -72,7 +72,7 @@ export abstract class BaseApiService {
       headers.set(key, value);
     }
 
-    const res = await fetch(url, { ...options, headers });
+    const res = await fetch(url, { ...options, headers, credentials: "include" });
 
     if (!res.ok) {
       // Allow subclasses to handle specific error status codes
