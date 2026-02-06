@@ -27,6 +27,7 @@ from aioia_core.errors import (
 from aioia_core.factories.base_repository_factory import BaseRepositoryFactory
 from aioia_core.models import Base, BaseModel
 from aioia_core.repositories import BaseRepository
+from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
 from aioia_core.types import (
     ConditionalFilter,
     ConditionalOperator,
@@ -38,7 +39,6 @@ from aioia_core.types import (
     is_conditional_filter,
     is_logical_filter,
 )
-from aioia_core.settings import DatabaseSettings, JWTSettings, OpenAIAPISettings
 
 __all__ = [
     # Database - New names (recommended)

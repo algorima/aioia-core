@@ -545,9 +545,7 @@ class BaseCrudRouter(
             )
         return item
 
-    def _decamelize_filter_fields(
-        self, filters: list[CrudFilter]
-    ) -> list[CrudFilter]:
+    def _decamelize_filter_fields(self, filters: list[CrudFilter]) -> list[CrudFilter]:
         """Recursively traverses the filter structure and decamelizes field names."""
         processed_filters: list[Any] = []
         for filter_item in filters:
