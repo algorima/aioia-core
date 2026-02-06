@@ -7,7 +7,7 @@ from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
 from jose import jwt
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from aioia_core.auth import UserInfo, UserRole
 from aioia_core.errors import FORBIDDEN, INVALID_TOKEN
@@ -52,7 +52,9 @@ class MockUserInfoProvider:
         ),
     }
 
-    def get_user_info(self, user_id: str, db) -> UserInfo | None:  # pylint: disable=unused-argument
+    def get_user_info(
+        self, user_id: str, db: Session  # pylint: disable=unused-argument
+    ) -> UserInfo | None:
         """Return user info based on user_id"""
         return self._users.get(user_id)
 
@@ -464,6 +466,7 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
 
     def test_repository_dependency_shares_db_session(self):
         """Test that repositories created from dependency share the same DB session."""
+
         # Create a custom router subclass that exposes the dependency for testing
         class TestableRouter(
             BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager]

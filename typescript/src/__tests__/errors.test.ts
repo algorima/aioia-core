@@ -53,7 +53,11 @@ describe("ServerError", () => {
   });
 
   it("should allow custom status code", () => {
-    const error = new ServerError("Service unavailable", "EXTERNAL_SERVICE_ERROR", 503);
+    const error = new ServerError(
+      "Service unavailable",
+      "EXTERNAL_SERVICE_ERROR",
+      503,
+    );
 
     expect(error.statusCode).toBe(503);
   });
