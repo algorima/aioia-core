@@ -10,6 +10,7 @@ Provides:
 from __future__ import annotations
 
 import importlib
+import warnings
 from typing import Any
 
 __version__ = "0.1.0"
@@ -86,7 +87,16 @@ _DEPRECATED_NAMES = {
 def __getattr__(name: str) -> Any:
     """PEP 562-style lazy loading of deprecated names."""
     if name in _DEPRECATED_NAMES:
-        # The imported modules issue their own DeprecationWarning.
+        # Some imported modules issue their own DeprecationWarning.
+        # For protocols, we issue a warning here as the module does not.
+        if name in {"CrudManagerProtocol", "DatabaseManagerProtocol"}:
+            new_name = name.replace("Manager", "Repository")
+            warnings.warn(
+                f"{name} is deprecated, use {new_name} instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         module = importlib.import_module(_DEPRECATED_NAMES[name])
         return getattr(module, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
