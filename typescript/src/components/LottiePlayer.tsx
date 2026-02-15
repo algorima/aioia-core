@@ -10,6 +10,7 @@ export interface LottiePlayerProps {
   autoplay?: boolean;
   style?: CSSProperties;
   speed?: number;
+  keepLastFrame?: boolean;
 }
 
 /**
@@ -23,6 +24,7 @@ export interface LottiePlayerProps {
  * @param [props.autoplay] 자동 재생 여부. Chromatic 환경이 아닐 경우 기본값은 `true`입니다.
  * @param [props.style] 컴포넌트에 적용할 인라인 스타일
  * @param [props.speed] 애니메이션 재생 속도
+ * @param [props.keepLastFrame] 애니메이션 종료 시 마지막 프레임 유지 여부
  */
 export function LottiePlayer({
   src,
