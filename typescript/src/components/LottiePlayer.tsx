@@ -30,6 +30,8 @@ export function LottiePlayer({
   src,
   autoplay,
   loop = true,
+  className,
+  style,
   ...rest
 }: LottiePlayerProps) {
   const [mounted, setMounted] = useState(false);
@@ -63,7 +65,7 @@ export function LottiePlayer({
   }, []);
 
   if (!mounted || !PlayerComponent) {
-    return <div {...rest} />;
+    return <div className={className} style={style} />;
   }
 
   return (
@@ -71,6 +73,8 @@ export function LottiePlayer({
       src={src}
       loop={loop}
       autoplay={autoplay !== undefined ? autoplay : !isInChromatic}
+      className={className}
+      style={style}
       {...rest}
     />
   );
