@@ -55,7 +55,6 @@
   },
   "dependencies": {
     "@lottiefiles/react-lottie-player": "^3.5.3",
-    "@sentry/nextjs": "^7.0.0",
     "chromatic": "^11.3.0"
   },
   "devDependencies": {
