@@ -300,14 +300,18 @@ describe("BaseCrudRepository", () => {
 
   // ErrorReporter integration tests
   describe("ErrorReporter integration", () => {
-    let mockErrorReporter: jest.Mocked<ErrorReporter>;
+    let mockCaptureException: jest.Mock;
+    let mockCaptureMessage: jest.Mock;
+    let mockErrorReporter: ErrorReporter;
     let apiServiceWithReporter: BaseApiService;
     let repositoryWithReporter: TestRepository;
 
     beforeEach(() => {
+      mockCaptureException = jest.fn();
+      mockCaptureMessage = jest.fn();
       mockErrorReporter = {
-        captureMessage: jest.fn(),
-        captureException: jest.fn(),
+        captureMessage: mockCaptureMessage,
+        captureException: mockCaptureException,
       };
 
       apiServiceWithReporter = {
@@ -330,9 +334,8 @@ describe("BaseCrudRepository", () => {
         "API response validation failed for tests",
       );
 
-      expect(mockErrorReporter.captureException).toHaveBeenCalledTimes(1);
-      const [capturedError, context] =
-        mockErrorReporter.captureException.mock.calls[0];
+      expect(mockCaptureException).toHaveBeenCalledTimes(1);
+      const [capturedError, context] = mockCaptureException.mock.calls[0];
       expect(capturedError.name).toBe("ZodError");
       expect(context).toEqual({
         tags: {
@@ -354,7 +357,7 @@ describe("BaseCrudRepository", () => {
 
       await repositoryWithReporter.getList();
 
-      expect(mockErrorReporter.captureException).not.toHaveBeenCalled();
+      expect(mockCaptureException).not.toHaveBeenCalled();
     });
 
     it("should not throw when errorReporter is absent and validation fails", async () => {
