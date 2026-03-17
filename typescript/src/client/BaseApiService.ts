@@ -9,14 +9,8 @@ export interface ApiErrorData {
  * can omit it without pulling in browser-specific monitoring SDKs.
  */
 export interface ErrorReporter {
-  captureMessage(
-    message: string,
-    context?: Record<string, unknown>,
-  ): void;
-  captureException(
-    error: Error,
-    context?: Record<string, unknown>,
-  ): void;
+  captureMessage(message: string, context?: Record<string, unknown>): void;
+  captureException(error: Error, context?: Record<string, unknown>): void;
 }
 
 /**
@@ -28,7 +22,11 @@ export abstract class BaseApiService {
   readonly apiPrefix: string;
   readonly errorReporter?: ErrorReporter;
 
-  constructor(baseUrl?: string, apiPrefix = "/api/v2", errorReporter?: ErrorReporter) {
+  constructor(
+    baseUrl?: string,
+    apiPrefix = "/api/v2",
+    errorReporter?: ErrorReporter,
+  ) {
     this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_BASE_URL || "";
     this.apiPrefix = apiPrefix;
     this.errorReporter = errorReporter;
