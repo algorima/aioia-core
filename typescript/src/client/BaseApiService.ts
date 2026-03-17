@@ -1,8 +1,16 @@
-import * as Sentry from "@sentry/nextjs";
-
 export interface ApiErrorData {
   code?: string;
   detail?: string;
+}
+
+/**
+ * Optional error reporter interface for observability integration (e.g. Sentry).
+ * Passed via constructor DI so that consumers without an error reporter (e.g. CLI)
+ * can omit it without pulling in browser-specific monitoring SDKs.
+ */
+export interface ErrorReporter {
+  captureMessage(message: string, context?: Record<string, unknown>): void;
+  captureException(error: Error, context?: Record<string, unknown>): void;
 }
 
 /**
@@ -12,10 +20,16 @@ export interface ApiErrorData {
 export abstract class BaseApiService {
   readonly baseUrl: string;
   readonly apiPrefix: string;
+  readonly errorReporter?: ErrorReporter;
 
-  constructor(baseUrl?: string, apiPrefix = "/api/v2") {
+  constructor(
+    baseUrl?: string,
+    apiPrefix = "/api/v2",
+    errorReporter?: ErrorReporter,
+  ) {
     this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_BASE_URL || "";
     this.apiPrefix = apiPrefix;
+    this.errorReporter = errorReporter;
   }
 
   /**
@@ -41,15 +55,13 @@ export abstract class BaseApiService {
     | Promise<Record<string, string>>;
 
   /**
-   * Handles the logout process. Implemented as a static method to be accessible
-   * without an instance, particularly in client-side scenarios where signOut is used.
-   * @param message The message to log before signing out.
+   * Handles the logout process. Subclasses override to add environment-specific
+   * sign-out logic (e.g., next-auth signOut with redirect).
+   * @param message The message to log and report before signing out.
    */
-  protected static handleLogout(message: string): Promise<never> {
+  protected handleLogout(message: string): Promise<never> {
     console.warn(message);
-    Sentry.captureMessage(message);
-    // This is a placeholder for the actual sign-out logic, which will be
-    // implemented in the client-specific subclass.
+    this.errorReporter?.captureMessage(message);
     throw new Error(message);
   }
 

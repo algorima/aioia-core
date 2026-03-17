@@ -16,7 +16,7 @@ export type { ErrorCode } from "./errors";
 
 // API Client
 export { BaseApiService } from "./client/BaseApiService";
-export type { ApiErrorData } from "./client/BaseApiService";
+export type { ApiErrorData, ErrorReporter } from "./client/BaseApiService";
 
 // Repository Pattern
 export { BaseCrudRepository } from "./repositories/BaseCrudRepository";

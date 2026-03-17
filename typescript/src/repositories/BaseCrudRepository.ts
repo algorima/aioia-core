@@ -1,4 +1,3 @@
-import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 
 import type { BaseApiService } from "../client/BaseApiService";
@@ -60,8 +59,8 @@ export abstract class BaseCrudRepository<
           rawData: data,
         });
 
-        // Report validation failures to Sentry for monitoring API schema changes
-        Sentry.captureException(error, {
+        // Report validation failures for monitoring API schema changes
+        this.apiService.errorReporter?.captureException(error, {
           tags: {
             errorType: "zod_validation_failure",
             resource: this.resource,
