@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { BaseApiService } from "../client/BaseApiService";
+import type { ErrorReporter } from "../client/BaseApiService";
 import { BaseCrudRepository } from "../repositories/BaseCrudRepository";
 import type { BaseRecord } from "../repositories/types";
 
@@ -291,6 +292,79 @@ describe("BaseCrudRepository", () => {
       };
       mockRequest.mockResolvedValueOnce(invalidResponse);
 
+      await expect(repository.getList()).rejects.toThrow(
+        "API response validation failed for tests",
+      );
+    });
+  });
+
+  // ErrorReporter integration tests
+  describe("ErrorReporter integration", () => {
+    let mockErrorReporter: jest.Mocked<ErrorReporter>;
+    let apiServiceWithReporter: BaseApiService;
+    let repositoryWithReporter: TestRepository;
+
+    beforeEach(() => {
+      mockErrorReporter = {
+        captureMessage: jest.fn(),
+        captureException: jest.fn(),
+      };
+
+      apiServiceWithReporter = {
+        request: mockRequest,
+        buildUrl: mockBuildUrl,
+        errorReporter: mockErrorReporter,
+      } as unknown as BaseApiService;
+
+      repositoryWithReporter = new TestRepository(apiServiceWithReporter);
+    });
+
+    it("should call captureException with correct tags and extra when validation fails", async () => {
+      const invalidResponse = {
+        data: [{ id: "1", name: 123 }], // name should be string
+        total: 1,
+      };
+      mockRequest.mockResolvedValueOnce(invalidResponse);
+
+      await expect(repositoryWithReporter.getList()).rejects.toThrow(
+        "API response validation failed for tests",
+      );
+
+      expect(mockErrorReporter.captureException).toHaveBeenCalledTimes(1);
+      const [capturedError, context] =
+        mockErrorReporter.captureException.mock.calls[0];
+      expect(capturedError.name).toBe("ZodError");
+      expect(context).toEqual({
+        tags: {
+          errorType: "zod_validation_failure",
+          resource: "tests",
+        },
+        extra: {
+          rawData: invalidResponse,
+        },
+      });
+    });
+
+    it("should not call captureException when validation succeeds", async () => {
+      const validResponse = {
+        data: [{ id: "1", name: "Valid Item" }],
+        total: 1,
+      };
+      mockRequest.mockResolvedValueOnce(validResponse);
+
+      await repositoryWithReporter.getList();
+
+      expect(mockErrorReporter.captureException).not.toHaveBeenCalled();
+    });
+
+    it("should not throw when errorReporter is absent and validation fails", async () => {
+      const invalidResponse = {
+        data: [{ id: "1", name: 123 }],
+        total: 1,
+      };
+      mockRequest.mockResolvedValueOnce(invalidResponse);
+
+      // errorReporter 없는 기본 repository — optional chaining으로 크래시 없음
       await expect(repository.getList()).rejects.toThrow(
         "API response validation failed for tests",
       );
