@@ -69,6 +69,19 @@ const { data, total } = await repo.getList({
 });
 ```
 
+## 목록 API 규격
+
+`BaseCrudRouter`의 `GET /{resource}`와 `BaseCrudRepository.getList`가 공유하는 규격입니다. 쿼리 키는 camelCase입니다.
+
+| 쿼리 키 | 값 | 기본값 |
+|---|---|---|
+| `current` | 페이지 번호 (1부터) | `1` |
+| `pageSize` | 페이지당 항목 수 (1~100) | `10` |
+| `sort` | `[["field", "asc\|desc"], ...]` JSON | 없음 |
+| `filters` | 필터 객체 배열 JSON (위 "복잡한 필터" 형식) | 없음 |
+
+응답은 `{"data": [...], "total": N}`입니다. `sort`와 `filters`의 필드명은 camelCase로 보내면 서버가 snake_case로 변환합니다. 목록 라우트를 직접 정의할 때도 같은 쿼리 키를 받아야 클라이언트와 호환됩니다.
+
 ## 주요 기능
 
 ### Python

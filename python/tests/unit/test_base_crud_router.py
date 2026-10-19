@@ -267,6 +267,32 @@ class TestBaseCrudRouter(unittest.TestCase):
         assert data is not None
         self.assertGreater(data[0]["createdAt"], data[1]["createdAt"])
 
+    def test_list_pagination_uses_page_size_camel_case_key(self):
+        """List endpoint reads the page size from the `pageSize` query key."""
+        auth_header = self.admin_auth_header()
+        for name in ("alpha", "beta", "charlie"):
+            self.test_client.post(
+                "/test-items", json={"name": name}, headers=auth_header
+            )
+
+        resp = self.test_client.get(
+            "/test-items?current=1&pageSize=2", headers=auth_header
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()["data"]), 2)
+        self.assertEqual(resp.json()["total"], 3)
+
+        resp = self.test_client.get(
+            "/test-items?current=2&pageSize=2", headers=auth_header
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()["data"]), 1)
+
+        # snake_case `page_size` is not a query key, so the default page size applies.
+        resp = self.test_client.get("/test-items?page_size=2", headers=auth_header)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp.json()["data"]), 3)
+
     def test_user_not_found_for_token(self):
         """Test that a 401 is raised if the user for a valid token is not found."""
         auth_header = {"Authorization": f"Bearer {make_jwt('non_existent_user')}"}

@@ -349,7 +349,9 @@ class BaseCrudRouter(
         )
         async def list_items(
             current: int = Query(1, ge=1, description="Current page number"),
-            page_size: int = Query(10, ge=1, le=100, description="Items per page"),
+            page_size: int = Query(
+                10, alias="pageSize", ge=1, le=100, description="Items per page"
+            ),
             sort_param: str | None = Query(
                 None,
                 alias="sort",
