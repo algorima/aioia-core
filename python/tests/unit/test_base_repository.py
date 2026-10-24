@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from aioia_core.models import BaseModel as DBBaseModel
 from aioia_core.repositories import BaseRepository
-from aioia_core.testing.database_manager import TestDatabaseManager
+from aioia_core.testing import DatabaseTestCase
 from aioia_core.types import CrudFilter
 
 
@@ -58,7 +58,7 @@ def convert_model_to_db_model(model: TestModel) -> dict[str, Any]:
     }
 
 
-class TestBaseRepository(TestDatabaseManager):
+class TestBaseRepository(DatabaseTestCase):
     """BaseRepository 클래스에 대한 단위 테스트"""
 
     @classmethod
