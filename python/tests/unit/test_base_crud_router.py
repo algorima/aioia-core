@@ -15,9 +15,9 @@ from aioia_core.fastapi import BaseCrudRouter
 from aioia_core.testing.crud_fixtures import (
     Base,
     TestCreate,
-    TestManager,
-    TestManagerFactory,
     TestModel,
+    TestRepository,
+    TestRepositoryFactory,
     TestUpdate,
 )
 
@@ -83,18 +83,18 @@ class TestBaseCrudRouter(unittest.TestCase):
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine)
 
-        self.manager_factory = TestManagerFactory(
-            repository_class=TestManager, db_session_factory=self.SessionLocal
+        self.repository_factory = TestRepositoryFactory(
+            repository_class=TestRepository, db_session_factory=self.SessionLocal
         )
         self.user_info_provider = MockUserInfoProvider()
 
         # Create router
-        self.router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+        self.router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestRepository](
             model_class=TestModel,
             create_schema=TestCreate,
             update_schema=TestUpdate,
             db_session_factory=self.SessionLocal,
-            manager_factory=self.manager_factory,
+            repository_factory=self.repository_factory,
             user_info_provider=self.user_info_provider,
             jwt_secret_key=SECRET,
             resource_name="test-items",
@@ -452,8 +452,8 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine)
 
-        self.manager_factory = TestManagerFactory(
-            repository_class=TestManager, db_session_factory=self.SessionLocal
+        self.repository_factory = TestRepositoryFactory(
+            repository_class=TestRepository, db_session_factory=self.SessionLocal
         )
         self.user_info_provider = MockUserInfoProvider()
 
@@ -465,12 +465,12 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
     def test_create_repository_dependency_from_factory(self):
         """Test that _create_repository_dependency_from_factory creates a working dependency."""
         # Create router
-        crud_router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+        crud_router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestRepository](
             model_class=TestModel,
             create_schema=TestCreate,
             update_schema=TestUpdate,
             db_session_factory=self.SessionLocal,
-            repository_factory=self.manager_factory,
+            repository_factory=self.repository_factory,
             user_info_provider=self.user_info_provider,
             jwt_secret_key=SECRET,
             resource_name="test-items",
@@ -478,8 +478,8 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
         )
 
         # Create a secondary repository factory (simulating StudioRepositoryFactory)
-        secondary_factory = TestManagerFactory(
-            repository_class=TestManager, db_session_factory=self.SessionLocal
+        secondary_factory = TestRepositoryFactory(
+            repository_class=TestRepository, db_session_factory=self.SessionLocal
         )
 
         # Use _create_repository_dependency_from_factory to create dependency
@@ -495,7 +495,7 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
 
         # Create a custom router subclass that exposes the dependency for testing
         class TestableRouter(
-            BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager]
+            BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestRepository]
         ):
             def __init__(self, *args, secondary_factory, **kwargs):
                 super().__init__(*args, **kwargs)
@@ -507,8 +507,8 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
             def _register_test_route(self):
                 @self.router.get("/test-session-sharing")
                 async def test_session_sharing(
-                    primary_repo: TestManager = Depends(self.get_repository_dep),
-                    secondary_repo: TestManager = Depends(
+                    primary_repo: TestRepository = Depends(self.get_repository_dep),
+                    secondary_repo: TestRepository = Depends(
                         self.get_secondary_repository_dep
                     ),
                 ):
@@ -519,8 +519,8 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
                         "same_session": primary_repo.db is secondary_repo.db,
                     }
 
-        secondary_factory = TestManagerFactory(
-            repository_class=TestManager, db_session_factory=self.SessionLocal
+        secondary_factory = TestRepositoryFactory(
+            repository_class=TestRepository, db_session_factory=self.SessionLocal
         )
 
         router = TestableRouter(
@@ -528,7 +528,7 @@ class TestCreateRepositoryDependencyFromFactory(unittest.TestCase):
             create_schema=TestCreate,
             update_schema=TestUpdate,
             db_session_factory=self.SessionLocal,
-            repository_factory=self.manager_factory,
+            repository_factory=self.repository_factory,
             user_info_provider=self.user_info_provider,
             jwt_secret_key=SECRET,
             resource_name="test-items",
@@ -569,8 +569,8 @@ class TestStartupValidation(unittest.TestCase):
         Base.metadata.create_all(self.engine)
         self.SessionLocal = sessionmaker(bind=self.engine)
 
-        self.manager_factory = TestManagerFactory(
-            repository_class=TestManager, db_session_factory=self.SessionLocal
+        self.repository_factory = TestRepositoryFactory(
+            repository_class=TestRepository, db_session_factory=self.SessionLocal
         )
         self.user_info_provider = MockUserInfoProvider()
 
@@ -582,12 +582,12 @@ class TestStartupValidation(unittest.TestCase):
     def test_jwt_without_user_info_provider_raises_error(self):
         """Test that providing jwt_secret_key without user_info_provider raises ValueError."""
         with self.assertRaises(ValueError) as context:
-            BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+            BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestRepository](
                 model_class=TestModel,
                 create_schema=TestCreate,
                 update_schema=TestUpdate,
                 db_session_factory=self.SessionLocal,
-                repository_factory=self.manager_factory,
+                repository_factory=self.repository_factory,
                 user_info_provider=None,  # No user_info_provider
                 jwt_secret_key=SECRET,  # But JWT is enabled
                 resource_name="test-items",
@@ -602,12 +602,12 @@ class TestStartupValidation(unittest.TestCase):
     def test_no_jwt_without_user_info_provider_succeeds(self):
         """Test that omitting both jwt_secret_key and user_info_provider is allowed."""
         # This should NOT raise an error
-        router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+        router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestRepository](
             model_class=TestModel,
             create_schema=TestCreate,
             update_schema=TestUpdate,
             db_session_factory=self.SessionLocal,
-            repository_factory=self.manager_factory,
+            repository_factory=self.repository_factory,
             user_info_provider=None,
             jwt_secret_key=None,
             resource_name="test-items",
@@ -621,12 +621,12 @@ class TestStartupValidation(unittest.TestCase):
     def test_jwt_with_user_info_provider_succeeds(self):
         """Test that providing both jwt_secret_key and user_info_provider succeeds."""
         # This should NOT raise an error
-        router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestManager](
+        router = BaseCrudRouter[TestModel, TestCreate, TestUpdate, TestRepository](
             model_class=TestModel,
             create_schema=TestCreate,
             update_schema=TestUpdate,
             db_session_factory=self.SessionLocal,
-            repository_factory=self.manager_factory,
+            repository_factory=self.repository_factory,
             user_info_provider=self.user_info_provider,
             jwt_secret_key=SECRET,
             resource_name="test-items",
