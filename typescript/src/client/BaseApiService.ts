@@ -1,4 +1,6 @@
-import { INTERNAL_SERVER_ERROR } from "../errors/codes";
+import { z } from "zod";
+
+import { INTERNAL_SERVER_ERROR, VALIDATION_ERROR } from "../errors/codes";
 import {
   ApiError,
   ClientError,
@@ -12,18 +14,47 @@ export interface ApiErrorData {
   detail?: string;
 }
 
-/** A request the caller cancelled through an AbortSignal is not a failure. */
-const isAbortError = (error: unknown): boolean =>
-  typeof error === "object" &&
-  error !== null &&
-  (error as { name?: unknown }).name === "AbortError";
+/**
+ * Error bodies readApiError understands. `detail` is a string (flat body),
+ * an object with its own `detail` and `code` (FastAPI's default rendering of
+ * an HTTPException whose detail is a dict), or a list of validation errors
+ * (FastAPI's default 422).
+ */
+const errorBodySchema = z.object({
+  code: z.string().optional(),
+  detail: z
+    .union([
+      z.string(),
+      z.object({ detail: z.string(), code: z.string().optional() }),
+      z.array(z.object({ msg: z.string() })).min(1),
+    ])
+    .optional(),
+});
+
+const nameOf = (value: unknown): unknown =>
+  typeof value === "object" && value !== null
+    ? (value as { name?: unknown }).name
+    : undefined;
+
+/**
+ * Whether a rejection is the caller cancelling the request. A timeout
+ * (AbortSignal.timeout) is not a cancel: the response did not arrive in time.
+ */
+const isCallerCancel = (error: unknown, signal?: AbortSignal | null) => {
+  if (signal?.aborted) return nameOf(signal.reason) !== "TimeoutError";
+  return nameOf(error) === "AbortError";
+};
 
 /**
  * Wraps a failure that happened before a response could be read.
- * Caller aborts pass through unchanged.
+ * A caller cancel passes through unchanged.
  */
-const toNetworkError = (error: unknown, url: string): unknown =>
-  isAbortError(error)
+const toNetworkError = (
+  error: unknown,
+  url: string,
+  signal?: AbortSignal | null,
+): unknown =>
+  isCallerCancel(error, signal)
     ? error
     : new NetworkError(`Network request failed: ${url}`, error);
 
@@ -91,9 +122,11 @@ export abstract class BaseApiService {
 
   /**
    * Makes a request to the API.
-   * Every failure is an ApiRequestError: NetworkError when no response arrives,
-   * InvalidResponseError when a JSON body cannot be parsed, and whatever
-   * handleError throws for an error status (ADR-0001).
+   * Throws NetworkError when no response arrives and InvalidResponseError when
+   * a JSON body cannot be parsed. An error status goes to handleError, whose
+   * error is thrown as is: the request fails with an ApiRequestError only if
+   * handleError throws one, which every override must do (ADR-0001).
+   * A request the caller cancels rejects with the cancel reason unchanged.
    * @param url The full URL to request.
    * @param options The options for the fetch request.
    * @param isRetry Whether this is a retry attempt after session refresh (internal use).
@@ -119,7 +152,7 @@ export abstract class BaseApiService {
         credentials: "include",
       });
     } catch (error) {
-      throw toNetworkError(error, url);
+      throw toNetworkError(error, url, options?.signal);
     }
 
     if (!res.ok) {
@@ -137,7 +170,7 @@ export abstract class BaseApiService {
     try {
       text = await res.text();
     } catch (error) {
-      throw toNetworkError(error, url);
+      throw toNetworkError(error, url, options?.signal);
     }
     if (!text) {
       return null;
@@ -159,10 +192,12 @@ export abstract class BaseApiService {
   }
 
   /**
-   * Handles an error status. The default reads the backend error body
-   * `{detail, code}` into a ServerError (5xx) or ClientError (anything else).
+   * Handles an error status. The default reads the backend error body into a
+   * ServerError (5xx) or ClientError (anything else).
    * Subclasses override it for environment-specific handling such as token
-   * refresh, and can reuse readApiError.
+   * refresh, and can reuse readApiError. An override must throw an
+   * ApiRequestError subtype for a failed request; request does not wrap what
+   * it throws, so control-flow errors such as a retry signal pass through.
    * @param response The raw fetch Response object.
    * @param _isRetry Whether this is a retry attempt after session refresh.
    */
@@ -174,21 +209,34 @@ export abstract class BaseApiService {
   }
 
   /**
-   * Reads the backend error body into an ApiError. A gateway in front of the
-   * backend can answer with a non-JSON body, so missing fields fall back to
-   * the status line and INTERNAL_SERVER_ERROR.
+   * Reads the backend error body into an ApiError. Only the shapes in
+   * errorBodySchema are read. Anything else, such as a gateway's HTML page,
+   * falls back to the status line and INTERNAL_SERVER_ERROR.
    * @param response The raw fetch Response object with an error status.
    */
   protected async readApiError(response: Response): Promise<ApiError> {
-    const body = (await response
-      .json()
-      .catch(() => null)) as ApiErrorData | null;
-    const message =
-      body?.detail || `${response.status} ${response.statusText}`.trim();
-    const code = body?.code || INTERNAL_SERVER_ERROR;
+    const raw: unknown = await response.json().catch(() => null);
+    const parsed = errorBodySchema.safeParse(raw);
+    const body = parsed.success ? parsed.data : {};
+
+    let message: string | undefined;
+    let code = body.code;
+    if (typeof body.detail === "string") {
+      message = body.detail;
+    } else if (Array.isArray(body.detail)) {
+      message = body.detail.map((item) => item.msg).join("; ");
+      code = code ?? VALIDATION_ERROR;
+    } else if (body.detail) {
+      message = body.detail.detail;
+      code = body.detail.code ?? code;
+    }
+
+    const finalMessage =
+      message || `${response.status} ${response.statusText}`.trim();
+    const finalCode = code || INTERNAL_SERVER_ERROR;
 
     return response.status >= 500
-      ? new ServerError(message, code, response.status)
-      : new ClientError(message, code, response.status);
+      ? new ServerError(finalMessage, finalCode, response.status)
+      : new ClientError(finalMessage, finalCode, response.status);
   }
 }

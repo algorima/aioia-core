@@ -75,6 +75,31 @@ describe("BaseApiService.request", () => {
 
       await expect(service.request(URL)).rejects.toBe(abort);
     });
+
+    it("should rethrow a caller abort with a custom reason unchanged", async () => {
+      const controller = new AbortController();
+      const reason = new Error("user left the page");
+      controller.abort(reason);
+      fetchMock.mockRejectedValue(reason);
+
+      await expect(
+        service.request(URL, { signal: controller.signal }),
+      ).rejects.toBe(reason);
+    });
+
+    it("should wrap a timeout in NetworkError", async () => {
+      const controller = new AbortController();
+      const timeout = new DOMException("signal timed out", "TimeoutError");
+      controller.abort(timeout);
+      fetchMock.mockRejectedValue(timeout);
+
+      const error = await service
+        .request(URL, { signal: controller.signal })
+        .catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(NetworkError);
+      expect((error as NetworkError).cause).toBe(timeout);
+    });
   });
 
   describe("when the response breaks the contract", () => {
@@ -146,6 +171,71 @@ describe("BaseApiService.request", () => {
         message: "502 Bad Gateway",
         errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
         statusCode: 502,
+      });
+    });
+
+    it("should read a nested error body", async () => {
+      fetchMock.mockResolvedValue(
+        jsonResponse(
+          {
+            detail: {
+              detail: "Item not found: 1",
+              code: ERROR_CODES.RESOURCE_NOT_FOUND,
+            },
+          },
+          404,
+        ),
+      );
+
+      const error = await service.request(URL).catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(ClientError);
+      expect(error).toMatchObject({
+        message: "Item not found: 1",
+        errorCode: ERROR_CODES.RESOURCE_NOT_FOUND,
+      });
+    });
+
+    it("should read a FastAPI validation error list", async () => {
+      fetchMock.mockResolvedValue(
+        jsonResponse(
+          {
+            detail: [
+              {
+                loc: ["query", "pageSize"],
+                msg: "Input should be less than or equal to 100",
+                type: "less_than_equal",
+              },
+            ],
+          },
+          422,
+        ),
+      );
+
+      const error = await service.request(URL).catch((e: unknown) => e);
+
+      expect(error).toBeInstanceOf(ClientError);
+      expect(error).toMatchObject({
+        message: "Input should be less than or equal to 100",
+        errorCode: ERROR_CODES.VALIDATION_ERROR,
+        statusCode: 422,
+      });
+    });
+
+    it("should fall back when the body has an unexpected shape", async () => {
+      fetchMock.mockResolvedValue(
+        new Response(JSON.stringify({ detail: 42, code: { nested: true } }), {
+          status: 400,
+          statusText: "Bad Request",
+          headers: { "content-type": "application/json" },
+        }),
+      );
+
+      const error = await service.request(URL).catch((e: unknown) => e);
+
+      expect(error).toMatchObject({
+        message: "400 Bad Request",
+        errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
       });
     });
 
