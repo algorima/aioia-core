@@ -69,6 +69,8 @@ supersedes: []
   - buppy `frontend/src/aidol/lib/debut.ts`의 `isExpectedApiFailure`가 `instanceof TypeError`와 브라우저별 메시지로 네트워크 실패를 가른다. 3.0.0에서는 네트워크 단절이 `NetworkError`라 이 판별이 거짓이 되어 버그로 다시 던져진다. 버전을 올리는 PR에서 `instanceof ApiRequestError`로 바꾼다.
   - `handleError`를 덮어쓰고 일반 `Error`나 응답 본문 객체를 던지는 하위 클래스: buppy `ClientApiService`, fancall·aidol·trade-safety의 `ApiService`, activity-timeblock `SimpleApiService`(자체 `ApiError`가 `Error`를 상속). 버전을 올리는 PR에서 오류 응답을 `ClientError`·`ServerError`(또는 그 하위 타입)로 던지게 바꾼다. 기본 `handleError`나 `readApiError`를 쓰면 된다.
   - buppy `ServerApiService`는 이미 `ClientError`·`ServerError`를 던진다. 자체 `readApiError`는 기본 구현으로 대체할 수 있다.
+  - buppy `debut.ts`의 `isAlreadyVotedError`는 `ClientApiService`가 409에서 응답 본문 객체를 그대로 던지는 것에 기대어 그 본문을 파싱한다. 409가 `ClientError`가 되면 이 판별이 거짓이 되어 "이미 투표함" 안내 대신 버그로 다시 던져진다. 같은 PR에서 `ClientError`의 `statusCode`·`errorCode`로 가르게 바꾼다.
+  - buppy `ClientApiService`는 모든 403을 앱의 `QuotaExceededError`(`Error` 상속)로 바꾸고, 채팅방 페이지 두 곳이 이 타입으로 할당량 초과를 가른다. 백엔드는 할당량이 아닌 이유(권한 없음 등)로도 403을 내므로 지금도 오분류가 있고, 할당량 초과 응답(Flask `chatroom/blueprints.py`)은 `{"error": ...}` 본문이라 코드가 없다. 할당량은 HTTP 응답의 다른 타입이 아니라 오류의 종류이므로 `errorCode`로 가른다. 순서: 백엔드가 `{detail, code}`에 할당량 코드를 싣고 → 403 분기를 지워 기본 `ClientError`를 타게 하고 → 채팅방 두 곳을 `ClientError`와 `hasCode`로 바꾼 뒤 `QuotaExceededError`를 지운다.
 - 순서: 하위 클래스가 위 규칙을 따른 뒤에 호출처의 넓은 `catch`를 "`ApiRequestError`면 처리, 아니면 다시 던짐"으로 좁힌다. 순서를 거꾸로 하면 HTTP 오류 응답이 버그로 다시 던져진다.
 
 ## 재검토 조건
