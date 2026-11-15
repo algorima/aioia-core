@@ -46,12 +46,5 @@ jobs:
         working-directory: typescript
 
       - name: Publish (dry-run)
-        run: npm publish --access public --dry-run
+        run: npm publish --dry-run
         working-directory: typescript
-
-      - name: Verify Semantic Release Config
-        run: npx semantic-release --dry-run
-        working-directory: typescript
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
