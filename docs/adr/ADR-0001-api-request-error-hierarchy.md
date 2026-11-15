@@ -13,7 +13,7 @@ supersedes: []
 
 ## Context
 
-`BaseApiService.request`는 응답이 오지 않은 실패(`fetch` 거부, 본문 읽기 실패)와 응답 본문 파싱 실패를 감싸지 않고 원래 타입(`TypeError`, `SyntaxError`) 그대로 올린다. `BaseCrudRepository.validateResponse`는 응답 스키마 검증 실패를 일반 `Error`로 던진다. HTTP 오류 응답은 하위 클래스마다 `handleError`에서 따로 바꾸는데, 다섯 곳 중 넷은 일반 `Error`를 던지고 `ClientError`·`ServerError`를 던지는 곳은 buppy `ServerApiService` 하나다.
+`BaseApiService.request`는 응답이 오지 않은 실패(`fetch` 거부, 본문 읽기 실패)와 응답 본문 파싱 실패를 감싸지 않고 원래 타입(`TypeError`, `SyntaxError`) 그대로 올린다. `BaseCrudRepository.validateResponse`는 응답 스키마 검증 실패를 일반 `Error`로 던진다. HTTP 오류 응답은 하위 클래스마다 `handleError`에서 따로 바꾸는데, 여섯 곳 중 다섯은 일반 `Error`(또는 `Error`를 상속한 자체 클래스나 응답 본문 객체)를 던지고 `ClientError`·`ServerError`를 던지는 곳은 buppy `ServerApiService` 하나다.
 
 그래서 호출처는 "API가 실패했다"와 "코드에 버그가 있다"를 타입으로 가를 수 없다. `TypeError`는 네트워크 장애일 수도, 코드 버그일 수도 있다. 가를 수 없으니 호출처는 예외를 전부 삼키거나 전부 다시 던지는 둘 중 하나를 고르게 된다. 전부 삼키면 코드 버그가 조용히 묻힌다. buppy의 `fetchPublicCompanions`가 그 예로, 백엔드가 거부한 요청(422)과 코드 버그를 같은 `catch`에서 빈 목록으로 바꿨고, 422는 Sentry에도 남지 않은 채 사이트맵에서 공개 아이돌이 빠졌다(buppy#1542).
 
@@ -32,7 +32,7 @@ supersedes: []
    - 단점: 뿌리 이름이 하나 는다. 호출처는 `ApiError`가 아니라 `ApiRequestError`를 잡아야 모든 요청 실패를 받는다.
 4. **라이브러리는 그대로 두고 쓰는 쪽 앱이 감싼다**
    - 장점: 라이브러리 변경이 없다.
-   - 단점: `BaseApiService`의 하위 클래스 다섯 개(buppy 둘, fancall·aidol·trade-safety 하나씩)가 같은 감싸기를 반복한다. 타입 구분은 모든 사용처가 같아야 의미가 있다.
+   - 단점: `BaseApiService`의 하위 클래스 여섯 개(buppy 둘, fancall·aidol·trade-safety·activity-timeblock 하나씩)가 같은 감싸기를 반복한다. 타입 구분은 모든 사용처가 같아야 의미가 있다.
 
 ## Decision
 
@@ -53,7 +53,7 @@ supersedes: []
   - `content-type`이 JSON인데 본문을 파싱하지 못하면 `InvalidResponseError`로 던진다.
   - `getAuthHeaders`의 오류는 요청 실패가 아니므로 감싸지 않는다.
 - `BaseApiService.handleError`는 추상 메서드가 아니라 기본 구현을 갖는다. 응답 본문을 읽어 5xx는 `ServerError`, 그 밖은 `ClientError`로 던진다. 변환은 `readApiError`로 분리해, 덮어쓰는 하위 클래스도 쓸 수 있다.
-  - 읽는 본문은 셋이고 zod로 검증한다. `detail`이 문자열인 평평한 본문, `detail` 안에 `detail`·`code`가 든 본문(FastAPI가 dict `detail`의 `HTTPException`을 기본 처리기로 내는 모양, 이 레포 Python `BaseCrudRouter`가 처리기 없이 내는 모양), `detail`이 검증 오류 목록인 FastAPI 기본 422(메시지는 `msg`를 이어 붙이고, 코드가 없으면 `VALIDATION_ERROR`).
+  - 읽는 본문은 셋이고 zod로 검증한다. `detail`이 문자열인 평평한 본문, `detail` 안에 `detail`·`code`가 든 본문(FastAPI가 dict `detail`의 `HTTPException`을 기본 처리기로 내는 모양, 이 레포 Python `BaseCrudRouter`가 처리기 없이 내는 모양), `detail`이 검증 오류 목록인 FastAPI 기본 422(메시지는 `msg`를 이어 붙이고, 코드가 없으면 `VALIDATION_ERROR`). `detail`과 `code`는 필드마다 따로 검증하므로, `code`가 문자열이 아니어도(예: `null`) 읽을 수 있는 `detail`은 버리지 않는다.
   - 그 밖의 본문(게이트웨이 HTML, 필드 타입이 다른 JSON)은 메시지를 상태 줄로, 코드를 `INTERNAL_SERVER_ERROR`로 둔다.
 - `handleError`를 덮어쓰는 하위 클래스는 오류 응답에 `ApiRequestError` 하위 타입을 던져야 한다. `request`는 `handleError`가 던진 것을 감싸지 않는다. 감싸면 하위 클래스가 제어 흐름에 쓰는 오류가 바뀐다. 예를 들어 buppy `ClientApiService`는 `handleError`에서 던진 `SessionRefreshedError`를 `request`에서 잡아 재시도한다. 이 규칙을 지키지 않은 하위 클래스에서는 "`ApiRequestError`가 아니면 버그"라는 호출처 규칙이 성립하지 않는다.
 - `BaseCrudRepository.validateResponse`는 스키마 검증 실패를 `InvalidResponseError`로 던진다. 메시지와 `errorReporter` 보고는 그대로다.

@@ -15,21 +15,26 @@ export interface ApiErrorData {
 }
 
 /**
- * Error bodies readApiError understands. `detail` is a string (flat body),
- * an object with its own `detail` and `code` (FastAPI's default rendering of
- * an HTTPException whose detail is a dict), or a list of validation errors
- * (FastAPI's default 422).
+ * The `detail` shapes readApiError understands: a string (flat body), an
+ * object with its own `detail` and `code` (FastAPI's default rendering of an
+ * HTTPException whose detail is a dict), or a list of validation errors
+ * (FastAPI's default 422). Fields are read one by one, so a malformed field
+ * does not discard a usable one.
  */
-const errorBodySchema = z.object({
-  code: z.string().optional(),
-  detail: z
-    .union([
-      z.string(),
-      z.object({ detail: z.string(), code: z.string().optional() }),
-      z.array(z.object({ msg: z.string() })).min(1),
-    ])
-    .optional(),
-});
+const detailSchema = z.union([
+  z.string(),
+  z.object({ detail: z.string(), code: z.unknown() }),
+  z.array(z.object({ msg: z.string() })).min(1),
+]);
+const codeSchema = z.string();
+
+const readField = <T>(
+  schema: z.ZodSchema<T>,
+  value: unknown,
+): T | undefined => {
+  const result = schema.safeParse(value);
+  return result.success ? result.data : undefined;
+};
 
 const nameOf = (value: unknown): unknown =>
   typeof value === "object" && value !== null
@@ -209,26 +214,30 @@ export abstract class BaseApiService {
   }
 
   /**
-   * Reads the backend error body into an ApiError. Only the shapes in
-   * errorBodySchema are read. Anything else, such as a gateway's HTML page,
-   * falls back to the status line and INTERNAL_SERVER_ERROR.
+   * Reads the backend error body into an ApiError. `detail` is read in the
+   * shapes of detailSchema and `code` only when it is a string, each on its
+   * own. Whatever is missing, such as on a gateway's HTML page, falls back to
+   * the status line and INTERNAL_SERVER_ERROR.
    * @param response The raw fetch Response object with an error status.
    */
   protected async readApiError(response: Response): Promise<ApiError> {
     const raw: unknown = await response.json().catch(() => null);
-    const parsed = errorBodySchema.safeParse(raw);
-    const body = parsed.success ? parsed.data : {};
+    const body =
+      typeof raw === "object" && raw !== null
+        ? (raw as Record<string, unknown>)
+        : {};
+    const detail = readField(detailSchema, body.detail);
 
     let message: string | undefined;
-    let code = body.code;
-    if (typeof body.detail === "string") {
-      message = body.detail;
-    } else if (Array.isArray(body.detail)) {
-      message = body.detail.map((item) => item.msg).join("; ");
+    let code = readField(codeSchema, body.code);
+    if (typeof detail === "string") {
+      message = detail;
+    } else if (Array.isArray(detail)) {
+      message = detail.map((item) => item.msg).join("; ");
       code = code ?? VALIDATION_ERROR;
-    } else if (body.detail) {
-      message = body.detail.detail;
-      code = body.detail.code ?? code;
+    } else if (detail) {
+      message = detail.detail;
+      code = readField(codeSchema, detail.code) ?? code;
     }
 
     const finalMessage =

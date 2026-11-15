@@ -222,6 +222,38 @@ describe("BaseApiService.request", () => {
       });
     });
 
+    it("should keep a string detail when code is not a string", async () => {
+      fetchMock.mockResolvedValue(
+        jsonResponse({ detail: "Item not found", code: null }, 404),
+      );
+
+      const error = await service.request(URL).catch((e: unknown) => e);
+
+      expect(error).toMatchObject({
+        message: "Item not found",
+        errorCode: ERROR_CODES.INTERNAL_SERVER_ERROR,
+      });
+    });
+
+    it("should keep a nested detail when its code is not a string", async () => {
+      fetchMock.mockResolvedValue(
+        jsonResponse(
+          {
+            detail: { detail: "Item not found: 1", code: 404 },
+            code: ERROR_CODES.RESOURCE_NOT_FOUND,
+          },
+          404,
+        ),
+      );
+
+      const error = await service.request(URL).catch((e: unknown) => e);
+
+      expect(error).toMatchObject({
+        message: "Item not found: 1",
+        errorCode: ERROR_CODES.RESOURCE_NOT_FOUND,
+      });
+    });
+
     it("should fall back when the body has an unexpected shape", async () => {
       fetchMock.mockResolvedValue(
         new Response(JSON.stringify({ detail: 42, code: { nested: true } }), {
