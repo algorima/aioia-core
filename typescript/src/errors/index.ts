@@ -3,7 +3,9 @@
  *
  * This module provides:
  * - ERROR_CODES: Standardized error codes synced with Python backend
- * - ApiError, ServerError, ClientError: Typed error classes
+ * - ApiRequestError: root of every API request failure, with
+ *   ApiError (HTTP error response: ClientError, ServerError),
+ *   NetworkError (no response) and InvalidResponseError (contract broken)
  *
  * @example
  * import { ERROR_CODES, ApiError, ClientError } from '@aioia/core/errors';
@@ -41,4 +43,11 @@ export {
 export type { ErrorCode } from "./codes";
 
 // Error classes
-export { ApiError, ServerError, ClientError } from "./exceptions";
+export {
+  ApiRequestError,
+  ApiError,
+  ServerError,
+  ClientError,
+  NetworkError,
+  InvalidResponseError,
+} from "./exceptions";

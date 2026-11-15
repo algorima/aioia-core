@@ -1,11 +1,63 @@
 /**
- * Base API error class for consistent error handling.
+ * Root of every failure of an API request.
+ * Callers treat an ApiRequestError as an expected failure and anything else
+ * as a bug to rethrow (ADR-0001).
+ *
+ * @example
+ * try {
+ *   await repository.getList();
+ * } catch (error) {
+ *   if (!(error instanceof ApiRequestError)) throw error;
+ *   // show a fallback
+ * }
+ */
+export class ApiRequestError extends Error {
+  /**
+   * The error this one wraps, if any. A class field rather than ErrorOptions
+   * because the build targets ES2020.
+   */
+  readonly cause?: unknown;
+
+  constructor(message: string, cause?: unknown) {
+    super(message);
+    this.name = "ApiRequestError";
+    this.cause = cause;
+    Object.setPrototypeOf(this, ApiRequestError.prototype);
+  }
+}
+
+/**
+ * No response arrived: the request was rejected or the body stream failed.
+ * A request the caller aborted is not wrapped.
+ */
+export class NetworkError extends ApiRequestError {
+  constructor(message: string, cause?: unknown) {
+    super(message, cause);
+    this.name = "NetworkError";
+    Object.setPrototypeOf(this, NetworkError.prototype);
+  }
+}
+
+/**
+ * A response arrived but broke the contract: the body could not be parsed,
+ * or it failed schema validation.
+ */
+export class InvalidResponseError extends ApiRequestError {
+  constructor(message: string, cause?: unknown) {
+    super(message, cause);
+    this.name = "InvalidResponseError";
+    Object.setPrototypeOf(this, InvalidResponseError.prototype);
+  }
+}
+
+/**
+ * HTTP error response.
  * Follows RFC 9457 Problem Details for HTTP APIs pattern.
  *
  * @example
  * throw new ApiError('Resource not found', 'RESOURCE_NOT_FOUND', 404);
  */
-export class ApiError extends Error {
+export class ApiError extends ApiRequestError {
   /** HTTP status code */
   readonly statusCode: number;
 

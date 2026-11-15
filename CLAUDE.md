@@ -56,4 +56,5 @@ TypeScript 코드를 수정한 후에는 **반드시** `typescript/` 디렉토�
 - 최소 변경: 안정성 최우선
 - 하위 호환성: Breaking change 최소화
 - 테스트 필수: 모든 PR에 테스트 포함
+- 설계 결정(ADR): 하위 호환을 깨는 변경, 공개 API 규약, 의존성 추가·제거는 같은 PR에 ADR 포함 (`docs/adr/README.md` 참고)
 - PR 템플릿: `.github/PULL_REQUEST_TEMPLATE.md` 참고

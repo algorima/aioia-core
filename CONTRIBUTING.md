@@ -44,6 +44,10 @@ npm run type-check
 
 커밋 타입 전체 목록은 `.github/PULL_REQUEST_TEMPLATE.md` 참조.
 
+## 설계 결정 (ADR)
+
+하위 호환을 깨는 변경, 공개 API 규약, 의존성 추가·제거처럼 이후 코드가 따라야 하는 기술 선택은 [`docs/adr/`](docs/adr/README.md)에 ADR로 남기고, 같은 PR에 포함합니다. 언제 쓰는지와 작성법은 해당 README를 참고하세요.
+
 ## 라이선스
 
 Apache 2.0 - LICENSE 파일 참고

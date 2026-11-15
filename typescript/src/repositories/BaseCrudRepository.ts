@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { BaseApiService } from "../client/BaseApiService";
+import { InvalidResponseError } from "../errors/exceptions";
 
 import type {
   BaseRecord,
@@ -39,7 +40,7 @@ export abstract class BaseCrudRepository<
    * @param data The raw API response data to validate
    * @param schema The Zod schema to validate against
    * @returns The validated and parsed data
-   * @throws Error with descriptive message if validation fails
+   * @throws InvalidResponseError with descriptive message if validation fails
    */
   protected validateResponse<T>(data: unknown, schema: z.ZodSchema<T>): T {
     try {
@@ -49,8 +50,9 @@ export abstract class BaseCrudRepository<
         const issues = error.issues
           .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
           .join("; ");
-        const validationError = new Error(
+        const validationError = new InvalidResponseError(
           `API response validation failed for ${this.resource}: ${issues}`,
+          error,
         );
 
         // Log validation failure to console for debugging

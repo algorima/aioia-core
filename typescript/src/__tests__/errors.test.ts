@@ -1,4 +1,52 @@
-import { ApiError, ServerError, ClientError, ERROR_CODES } from "../errors";
+import {
+  ApiError,
+  ApiRequestError,
+  ServerError,
+  ClientError,
+  InvalidResponseError,
+  NetworkError,
+  ERROR_CODES,
+} from "../errors";
+
+describe("ApiRequestError hierarchy", () => {
+  it("should put HTTP error responses under ApiRequestError", () => {
+    expect(new ApiError("Test", "TEST_CODE", 400)).toBeInstanceOf(
+      ApiRequestError,
+    );
+    expect(new ClientError("Test", "TEST_CODE")).toBeInstanceOf(
+      ApiRequestError,
+    );
+    expect(new ServerError("Test", "TEST_CODE")).toBeInstanceOf(
+      ApiRequestError,
+    );
+  });
+
+  it("should keep NetworkError and InvalidResponseError out of ApiError", () => {
+    const network = new NetworkError("Network request failed");
+    const invalid = new InvalidResponseError("Response body is not JSON");
+
+    expect(network).toBeInstanceOf(ApiRequestError);
+    expect(network).not.toBeInstanceOf(ApiError);
+    expect(invalid).toBeInstanceOf(ApiRequestError);
+    expect(invalid).not.toBeInstanceOf(ApiError);
+  });
+
+  it("should keep the original error as cause", () => {
+    const original = new TypeError("fetch failed");
+    const error = new NetworkError("Network request failed", original);
+
+    expect(error.cause).toBe(original);
+    expect(error.name).toBe("NetworkError");
+    expect(error).toBeInstanceOf(Error);
+  });
+
+  it("should name InvalidResponseError", () => {
+    const error = new InvalidResponseError("bad body");
+
+    expect(error.name).toBe("InvalidResponseError");
+    expect(error.cause).toBeUndefined();
+  });
+});
 
 describe("ApiError", () => {
   it("should create error with correct properties", () => {
