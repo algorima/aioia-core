@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { BaseApiService } from "../client/BaseApiService";
 import type { ErrorReporter } from "../client/BaseApiService";
+import { InvalidResponseError } from "../errors";
 import { BaseCrudRepository } from "../repositories/BaseCrudRepository";
 import type { BaseRecord } from "../repositories/types";
 
@@ -248,6 +249,17 @@ describe("BaseCrudRepository", () => {
 
       await expect(repository.getList()).rejects.toThrow(
         "API response validation failed for tests",
+      );
+    });
+
+    it("should throw InvalidResponseError for an invalid response", async () => {
+      mockRequest.mockResolvedValueOnce({
+        data: [{ id: "1", name: 123 }],
+        total: 1,
+      });
+
+      await expect(repository.getList()).rejects.toBeInstanceOf(
+        InvalidResponseError,
       );
     });
 

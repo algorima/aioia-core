@@ -1,7 +1,31 @@
+import { INTERNAL_SERVER_ERROR } from "../errors/codes";
+import {
+  ApiError,
+  ClientError,
+  InvalidResponseError,
+  NetworkError,
+  ServerError,
+} from "../errors/exceptions";
+
 export interface ApiErrorData {
   code?: string;
   detail?: string;
 }
+
+/** A request the caller cancelled through an AbortSignal is not a failure. */
+const isAbortError = (error: unknown): boolean =>
+  typeof error === "object" &&
+  error !== null &&
+  (error as { name?: unknown }).name === "AbortError";
+
+/**
+ * Wraps a failure that happened before a response could be read.
+ * Caller aborts pass through unchanged.
+ */
+const toNetworkError = (error: unknown, url: string): unknown =>
+  isAbortError(error)
+    ? error
+    : new NetworkError(`Network request failed: ${url}`, error);
 
 /**
  * Optional error reporter interface for observability integration (e.g. Sentry).
@@ -67,6 +91,9 @@ export abstract class BaseApiService {
 
   /**
    * Makes a request to the API.
+   * Every failure is an ApiRequestError: NetworkError when no response arrives,
+   * InvalidResponseError when a JSON body cannot be parsed, and whatever
+   * handleError throws for an error status (ADR-0001).
    * @param url The full URL to request.
    * @param options The options for the fetch request.
    * @param isRetry Whether this is a retry attempt after session refresh (internal use).
@@ -84,11 +111,16 @@ export abstract class BaseApiService {
       headers.set(key, value);
     }
 
-    const res = await fetch(url, {
-      ...options,
-      headers,
-      credentials: "include",
-    });
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        ...options,
+        headers,
+        credentials: "include",
+      });
+    } catch (error) {
+      throw toNetworkError(error, url);
+    }
 
     if (!res.ok) {
       // Allow subclasses to handle specific error status codes
@@ -101,28 +133,62 @@ export abstract class BaseApiService {
     }
 
     // Some servers omit content-length; safely read body and decide
-    const text = await res.text();
+    let text: string;
+    try {
+      text = await res.text();
+    } catch (error) {
+      throw toNetworkError(error, url);
+    }
     if (!text) {
       return null;
     }
 
     const contentType = res.headers.get("content-type") || "";
     if (contentType.includes("application/json")) {
-      return JSON.parse(text) as unknown;
+      try {
+        return JSON.parse(text) as unknown;
+      } catch (error) {
+        throw new InvalidResponseError(
+          `Response body is not valid JSON: ${url}`,
+          error,
+        );
+      }
     }
 
     return text;
   }
 
   /**
-   * Abstract method for handling API errors.
-   * Subclasses must implement this to define specific error handling logic
-   * (e.g., token refresh, redirects).
+   * Handles an error status. The default reads the backend error body
+   * `{detail, code}` into a ServerError (5xx) or ClientError (anything else).
+   * Subclasses override it for environment-specific handling such as token
+   * refresh, and can reuse readApiError.
    * @param response The raw fetch Response object.
-   * @param isRetry Whether this is a retry attempt after session refresh.
+   * @param _isRetry Whether this is a retry attempt after session refresh.
    */
-  protected abstract handleError(
+  protected async handleError(
     response: Response,
-    isRetry: boolean,
-  ): Promise<never>;
+    _isRetry: boolean,
+  ): Promise<never> {
+    throw await this.readApiError(response);
+  }
+
+  /**
+   * Reads the backend error body into an ApiError. A gateway in front of the
+   * backend can answer with a non-JSON body, so missing fields fall back to
+   * the status line and INTERNAL_SERVER_ERROR.
+   * @param response The raw fetch Response object with an error status.
+   */
+  protected async readApiError(response: Response): Promise<ApiError> {
+    const body = (await response
+      .json()
+      .catch(() => null)) as ApiErrorData | null;
+    const message =
+      body?.detail || `${response.status} ${response.statusText}`.trim();
+    const code = body?.code || INTERNAL_SERVER_ERROR;
+
+    return response.status >= 500
+      ? new ServerError(message, code, response.status)
+      : new ClientError(message, code, response.status);
+  }
 }

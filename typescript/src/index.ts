@@ -11,7 +11,15 @@
  */
 
 // Errors (synced with Python aioia_core.errors)
-export { ERROR_CODES, ApiError, ServerError, ClientError } from "./errors";
+export {
+  ERROR_CODES,
+  ApiRequestError,
+  ApiError,
+  ServerError,
+  ClientError,
+  NetworkError,
+  InvalidResponseError,
+} from "./errors";
 export type { ErrorCode } from "./errors";
 
 // API Client
