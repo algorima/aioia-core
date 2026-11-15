@@ -38,5 +38,16 @@ export default defineConfig({
       },
     },
   },
-  plugins: [dts()],
+  plugins: [
+    dts({
+      // `exclude` replaces the tsconfig.json value, so repeat its entries.
+      // Test files stay in tsconfig.json so `tsc --noEmit` still checks them.
+      exclude: [
+        "node_modules/**",
+        "dist/**",
+        "src/**/__tests__/**",
+        "src/**/*.test.{ts,tsx}",
+      ],
+    }),
+  ],
 });
