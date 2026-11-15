@@ -48,3 +48,12 @@ jobs:
       - name: Publish (dry-run)
         run: npm publish --dry-run
         working-directory: typescript
+
+      # Loads .releaserc.json and every plugin, then exits on the pull request
+      # check before any authentication, so no token is needed. On main the
+      # trusted publisher is bound to publish-typescript.yml, and that
+      # workflow runs the real release.
+      - name: Verify Semantic Release Config
+        if: github.event_name == 'pull_request'
+        run: npx semantic-release --dry-run
+        working-directory: typescript
